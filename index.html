@@ -16,7 +16,6 @@
         body {
             font-family: 'Times New Roman', Times, serif;
             background-color: #fff0f2;
-            /* TRIPLE COMPATIBILIDAD DE FONDO POR SI ES PNG, PNG MAYÚSCULA O JPG */
             background-image: url('fondo.png'), url('fondo.PNG'), url('fondo.jpg'), url('fondo.JPG');
             background-repeat: no-repeat !important;
             background-position: center center !important;
@@ -397,6 +396,33 @@
             font-family: 'Times New Roman', Times, serif;
             cursor: pointer;
         }
+
+        /* ICONO FLOTANTE DE WHATSAPP */
+        .btn-whatsapp-flotante {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #25d366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+        .btn-whatsapp-flotante:hover {
+            transform: scale(1.1);
+        }
+        .btn-whatsapp-flotante svg {
+            width: 35px;
+            height: 35px;
+            fill: white;
+        }
         
         @media (max-width: 1150px) {
             .decoracion-lateral-izq, .decoracion-lateral-der {
@@ -407,25 +433,29 @@
 </head>
 <body>
 
-<!-- DECORACIONES LATERALES CON FALLBACKS AUTOMÁTICOS -->
+<!-- BOTÓN FLOTANTE DE CONSULTAS EN GENERAL POR WHATSAPP -->
+<a href="https://wa.me/5492932440521?text=Hola!%20Tengo%20una%20duda%20sobre%20un%20pedido%20de%20la%20tienda" class="btn-whatsapp-flotante" target="_blank" title="¿Tenes alguna duda? ¡Escribinos!">
+    <svg viewBox="0 0 24 24">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.51 5.284 3.508 8.492-.004 6.66-5.34 11.997-11.953 11.997-2.005-.001-3.973-.503-5.714-1.458L0 24zm6.59-4.846c1.66.986 3.298 1.448 5.355 1.449 5.546 0 10.058-4.478 10.062-9.966.002-2.659-1.03-5.159-2.906-7.038-1.876-1.88-4.373-2.914-7.031-2.915-5.553 0-10.065 4.48-10.069 9.968-.001 2.15.57 4.148 1.651 5.867l-1.08 3.944 4.018-1.043z"/>
+    </svg>
+</a>
+
 <div class="decoracion-lateral-izq">
-    <img src="sylveon.png" onerror="this.src='sylveon.PNG'; this.onerror=function(){this.src='sylveon.gif';};">
-    <img src="nyancat.png" onerror="this.src='nyancat.PNG'; this.onerror=function(){this.src='nyancat.gif';};">
-    <img src="mune.png" onerror="this.src='mune.PNG'; this.onerror=function(){this.src='mune.jpg';};">
+    <img src="sylveon.jpg" onerror="this.src='sylveon.png';">
+    <img src="nyancat.jpg" onerror="this.src='nyancat.png';">
+    <img src="mune.jpg" onerror="this.src='mune.png';">
 </div>
 <div class="decoracion-lateral-der">
-    <img src="mune.png" onerror="this.src='mune.PNG'; this.onerror=function(){this.src='mune.jpg';};">
-    <img src="nyancat.png" onerror="this.src='nyancat.PNG'; this.onerror=function(){this.src='nyancat.gif';};">
-    <img src="sylveon.png" onerror="this.src='sylveon.PNG'; this.onerror=function(){this.src='sylveon.gif';};">
+    <img src="mune.jpg" onerror="this.src='mune.png';">
+    <img src="nyancat.jpg" onerror="this.src='nyancat.png';">
+    <img src="sylveon.jpg" onerror="this.src='sylveon.png';">
 </div>
 
 <div class="wrapper">
-    <!-- LOGO CON DOBLE EXTENSIÓN DE RESPALDO -->
     <div class="logo-contenedor">
         <img src="logo.png" onerror="this.src='logo.PNG'; this.onerror=function(){this.src='logo.jpg'; this.onerror=function(){this.src='logo.JPG';};};" class="logo-tienda" alt="Logo">
     </div>
 
-    <!-- CABECERA CON CHIIKAWA -->
     <header>
         <img src="chii.png" class="img-chii" onerror="this.src='chii.PNG'; this.onerror=function(){this.src='chii.webp';};">
         <div class="header-info">
@@ -439,7 +469,6 @@
         <input type="text" id="input-busqueda" class="search-input" placeholder="‹3 Buscar productos... (ej: llavero, sticker, ddlc)" oninput="filtrarProductos()">
     </div>
 
-    <!-- SEPARADORES CON DOBLE EXTENSIÓN -->
     <div class="separador-cute">
         <img src="pastelitos.png" onerror="this.src='pastelitos.PNG'; this.onerror=function(){this.src='pastelitos.jpg'; this.onerror=function(){this.src='pastelitos.JPG';};};" alt="Separador">
     </div>
@@ -508,7 +537,7 @@
             <label>Selecciona cómo deseas abonar:</label>
             <select id="sel-pago" onchange="alternarInfoPago()">
                 <option value="">-- Elige una opción --</option>
-                <option value="transferencia">Transferencia (Banco Nación)</option>
+                <option value="mercadopago">Mercado Pago (Transferencia / Link)</option>
                 <option value="efectivo">Efectivo (Con 50% de seña previa)</option>
             </select>
         </div>
@@ -786,7 +815,7 @@
 
     function quitarDelCarrito(idUnico, idProducto, cantidad, nombreBase, varianteNombre) {
         const prod = inventario.find(p => p.id === idProducto);
-        if (prod) prod.stock += quantity;
+        if (prod) prod.stock += cantidad;
 
         if (varianteNombre) {
             stockVariantes[nombreBase][varianteNombre] += cantidad;
@@ -888,21 +917,23 @@
         
         cajaInfo.style.display = "block";
         
-        if (metodoPago === "efectivo") {
+        if (metodoPago === "mercadopago") {
+            cajaInfo.innerHTML = `
+                <strong>‹3 Checkout de Mercado Pago:</strong><br>
+                Podés abonar enviando dinero directo al Alias de la tienda o usando el link de pago oficial.<br><br>
+                <b>Datos de Cuenta:</b><br>
+                • Alias MP: <b>usachis</b><br>
+                • A nombre de: <b>Violeta Toconas</b><br><br>
+                <a href="https://link.mercadopago.com.ar/TU_LINK_DE_PAGO_AQUI" target="_blank" style="display:inline-block; background-color:#009ee3; color:white; padding:8px 15px; border-radius:8px; font-weight:bold; text-decoration:none; margin-top:5px; text-align:center; width:100%;">Pagar con Link de Mercado Pago 💳</a>
+            `;
+        } else if (metodoPago === "efectivo") {
             cajaInfo.innerHTML = `
                 <strong>‹3 Aviso de Reserva Importante:</strong><br>
                 En caso de pagar con efectivo deberás abonar al menos el <b>50%</b> del valor total mediante transferencia bancaria.<br><br>
-                <b>Datos de Cuenta (Banco Nación):</b><br>
+                <b>Datos de Cuenta (Mercado Pago):</b><br>
                 • Alias: <b>usachis</b><br>
                 • A nombre de: <b>Violeta Toconas</b><br><br>
-                Una vez hecho el depósito, envía el comprobante al Instagram de la tienda: <b>@usachistresure</b>
-            `;
-        } else if (metodoPago === "transferencia") {
-            cajaInfo.innerHTML = `
-                <strong>Datos de Cuenta (Banco Nación):</b><br>
-                • Alias: <b>usachis</b><br>
-                • A nombre de: <b>Violeta Toconas</b><br><br>
-                ¡Importante! Al finalizar, recordá mandar la captura del comprobante al Instagram de la tienda: <b>@usachistresure</b>
+                Una vez hecho el depósito de la seña, el sistema te redirigirá a WhatsApp para pasar el comprobante.
             `;
         }
     }
@@ -924,18 +955,29 @@
         const recargoEnvio = cliente.entrega === "envio" ? 2500 : 0;
         const totalNeto = sumaDinero + recargoEnvio;
 
+        // 1. ARMAR EL LISTADO HTML PARA EMAILJS
         let listadoHTML = "<ul style='padding-left: 20px; line-height: 1.6;'>";
+        // 2. ARMAR EL TEXTO EN BULLETS LIMPIO PARA WHATSAPP
+        let textoWhatsAppProductos = "";
+        
         carrito.forEach(item => {
             listadoHTML += `<li><strong>${item.nombre}</strong> — Cantidad: ${item.canvasCantidad} unidades (Subtotal: $${item.precio})</li>`;
+            textoWhatsAppProductos += `• ${item.nombre} x${item.canvasCantidad}\n`;
         });
         listadoHTML += "</ul>";
+
+        // CONFIGURACIÓN DINÁMICA DEL MENSAJE DE WHATSAPP SOLICITADO
+        let modoPagoTexto = pago === "mercadopago" ? "Mercado Pago" : "Efectivo (Seña 50%)";
+        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}\nEntrega: ${cliente.entrega === "envio" ? "Envío a domicilio" : "Punto de encuentro"}\nMétodo de pago elegido: ${modoPagoTexto}`;
+        
+        let urlWhatsAppFinal = `https://wa.me/5492932440521?text=${encodeURIComponent(mensajeWA)}`;
 
         const variablesTemplate = {
             to_email: "violetatoconas10@gmail.com",
             cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
             cliente_telefono: cliente.telefono,
             metodo_entrega: cliente.entrega === "envio" ? `Envío a domicilio a: ${cliente.direccion}` : "Punto de encuentro",
-            metodo_pago: pago === "transferencia" ? "TRANSFERENCIA (BANCO NACIÓN)" : "EFECTIVO",
+            metodo_pago: pago === "mercadopago" ? "MERCADO PAGO" : "EFECTIVO",
             productos_detalle: listadoHTML,
             total_productos: sumaUnidades,
             total_dinero: totalNeto
@@ -946,8 +988,11 @@
 
         emailjs.send(SERVICE_ID, TEMPLATE_ID, variablesTemplate)
             .then(function(response) {
-                alert("¡Muchas gracias por tu compra! (っ•‿•)っ\nPronto nos pondremos en contacto contigo para confirmar el pedido.");
+                alert("¡Pedido registrado! (っ•‿•)っ\nAhora te redirigiremos a WhatsApp para finalizar tu pago o enviarnos el comprobante.");
                 
+                // REDIRECCIÓN AUTOMÁTICA A WHATSAPP CON EL MENSAJE DINÁMICO
+                window.open(urlWhatsAppFinal, '_blank');
+
                 carrito = [];
                 actualizarVisualCarrito();
                 document.getElementById("modal-pago").style.display = "none";
@@ -959,7 +1004,8 @@
                 }
             }, function(error) {
                 console.error("Fallo EmailJS:", error);
-                alert("Hubo un error de conexión al intentar enviar el correo. (´•__•`) Por favor intenta de nuevo.");
+                alert("Hubo un error de conexión al guardar el pedido. Redirigiendo a WhatsApp de todas formas para que no pierdas tu compra.");
+                window.open(urlWhatsAppFinal, '_blank');
                 if(btnFinal) {
                     btnFinal.disabled = false;
                     btnFinal.innerText = "Aceptar y Enviar Pedido (っˆڡˆς)";
