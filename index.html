@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Usachis Treasure - Tienda</title>
-    <!-- Librería de EmailJS -->
+    <!-- Librerías de EmailJS y Firebase (compat) -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
         emailjs.init("PLpPqaMoJMEIglLQX");
     </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
     <style>
         * { box-sizing: border-box; }
         body {
@@ -26,140 +29,68 @@
         }
         .wrapper { max-width: 800px; margin: 0 auto; position: relative; }
         
-        /* BOTÓN MENÚ 3 LÍNEAS FIXED Y VISIBLE */
+        /* BOTÓN MENÚ 3 LÍNEAS */
         .btn-menu-hamburguesa {
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 999999;
-            background-color: #ffffff;
-            border: 2px solid #f5d6dc;
-            border-radius: 12px;
-            padding: 8px 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(240, 125, 150, 0.3);
-            font-size: 1.8rem;
-            color: #f07d96;
-            line-height: 1;
+            position: fixed; top: 15px; left: 15px; z-index: 999999;
+            background-color: #ffffff; border: 2px solid #f5d6dc; border-radius: 12px;
+            padding: 8px 15px; cursor: pointer; box-shadow: 0 4px 12px rgba(240, 125, 150, 0.3);
+            font-size: 1.8rem; color: #f07d96; line-height: 1;
         }
 
-        /* BOTÓN FLOTANTE SUPERIOR DE CARRITO CON CONTADOR */
+        /* BOTÓN SUPERIOR CARRITO CON CONTADOR */
         .btn-carrito-superior {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 999999;
-            background-color: #ffffff;
-            border: 2px solid #f5d6dc;
-            border-radius: 12px;
-            padding: 8px 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(240, 125, 150, 0.3);
-            font-size: 1.4rem;
-            color: #f07d96;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
+            position: fixed; top: 15px; right: 15px; z-index: 999999;
+            background-color: #ffffff; border: 2px solid #f5d6dc; border-radius: 12px;
+            padding: 8px 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(240, 125, 150, 0.3);
+            font-size: 1.4rem; color: #f07d96; display: flex; align-items: center; gap: 6px;
         }
         .badge-cant-carrito {
-            background-color: #f07d96;
-            color: white;
-            font-size: 0.85rem;
-            font-weight: bold;
-            border-radius: 50%;
-            padding: 2px 7px;
-            min-width: 22px;
-            text-align: center;
+            background-color: #f07d96; color: white; font-size: 0.85rem;
+            font-weight: bold; border-radius: 50%; padding: 2px 7px; min-width: 22px; text-align: center;
         }
 
-        /* OVERLAY OSCURO DETRÁS DEL MENÚ */
+        /* NOTIFICACIÓN TOAST PRODUCTO AGREGADO */
+        .toast-notificacion {
+            position: fixed; bottom: 90px; right: 20px; z-index: 9999999;
+            background-color: #ffffff; border: 2px solid #f07d96; color: #4d3d40;
+            padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(240, 125, 150, 0.3);
+            font-weight: bold; font-size: 1rem; display: none; align-items: center; gap: 10px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* OVERLAY Y MENÚ LATERAL */
         .overlay-menu {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.5);
-            z-index: 999998;
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5); z-index: 999998;
         }
-
-        /* MENÚ LATERAL DESLIZABLE */
         .menu-lateral {
-            position: fixed;
-            top: 0;
-            left: -320px;
-            width: 300px;
-            height: 100vh;
-            background-color: #ffffff;
-            border-right: 3px solid #f5d6dc;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.25);
-            z-index: 9999999;
-            transition: all 0.3s ease;
-            padding: 20px;
-            overflow-y: auto;
+            position: fixed; top: 0; left: -320px; width: 300px; height: 100vh;
+            background-color: #ffffff; border-right: 3px solid #f5d6dc; box-shadow: 5px 0 20px rgba(0,0,0,0.25);
+            z-index: 9999999; transition: all 0.3s ease; padding: 20px; overflow-y: auto;
         }
-        .menu-lateral.abierto {
-            left: 0 !important;
-        }
-        .btn-cerrar-menu {
-            background: none;
-            border: none;
-            font-size: 1.8rem;
-            color: #f07d96;
-            float: right;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .menu-seccion-titulo {
-            font-size: 1.2rem;
-            color: #f07d96;
-            border-bottom: 2px solid #f5d6dc;
-            padding-bottom: 5px;
-            margin-top: 25px;
-            margin-bottom: 12px;
-            clear: both;
-        }
+        .menu-lateral.abierto { left: 0 !important; }
+        .btn-cerrar-menu { background: none; border: none; font-size: 1.8rem; color: #f07d96; float: right; cursor: pointer; font-weight: bold; }
+        .menu-seccion-titulo { font-size: 1.2rem; color: #f07d96; border-bottom: 2px solid #f5d6dc; padding-bottom: 5px; margin-top: 25px; margin-bottom: 12px; clear: both; }
         .menu-opcion-cat {
-            display: block;
-            width: 100%;
-            text-align: left;
-            background: #fff0f2;
-            border: 1px solid #f5d6dc;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            border-radius: 10px;
-            color: #4d3d40;
-            cursor: pointer;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 1rem;
-            font-weight: bold;
+            display: block; width: 100%; text-align: left; background: #fff0f2; border: 1px solid #f5d6dc;
+            padding: 10px 12px; margin-bottom: 8px; border-radius: 10px; color: #4d3d40; cursor: pointer;
+            font-family: 'Times New Roman', Times, serif; font-size: 1rem; font-weight: bold;
         }
-        .menu-opcion-cat:hover, .menu-opcion-cat:active {
-            background-color: #ffe0e6;
-        }
-        .info-box-menu {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #6e5a5c;
-            background: #fffcfc;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px dashed #f5d6dc;
-        }
+        .menu-opcion-cat:hover { background-color: #ffe0e6; }
+        .info-box-menu { font-size: 0.95rem; line-height: 1.5; color: #6e5a5c; background: #fffcfc; padding: 12px; border-radius: 10px; border: 1px dashed #f5d6dc; }
 
-        /* DECORACIONES LATERALES */
-        .decoracion-lateral-izq, .decoracion-lateral-der {
-            position: fixed; top: 50%; transform: translateY(-50%); width: 120px; z-index: 10; opacity: 0.9; text-align: center;
-        }
+        /* DECORACIONES Y HEADER */
+        .decoracion-lateral-izq, .decoracion-lateral-der { position: fixed; top: 50%; transform: translateY(-50%); width: 120px; z-index: 10; opacity: 0.9; text-align: center; }
         .decoracion-lateral-izq { left: 20px; }
         .decoracion-lateral-der { right: 20px; }
         .decoracion-lateral-izq img, .decoracion-lateral-der img { width: 100%; height: auto; margin-bottom: 25px; display: block; }
-
-        /* LOGO PRINCIPAL */
+        
         .logo-contenedor { text-align: center; margin-bottom: 20px; margin-top: 10px; }
-        .logo-tienda {
-            width: 260px; height: 260px; object-fit: contain; border-radius: 50%;
-            border: 3px solid #f5d6dc; background-color: rgba(255, 255, 255, 0.95); padding: 8px; box-shadow: 0 6px 15px rgba(240, 125, 150, 0.2);
-        }
+        .logo-tienda { width: 260px; height: 260px; object-fit: contain; border-radius: 50%; border: 3px solid #f5d6dc; background-color: rgba(255, 255, 255, 0.95); padding: 8px; box-shadow: 0 6px 15px rgba(240, 125, 150, 0.2); }
 
         header {
             text-align: center; padding: 25px 15px; background: rgba(255, 255, 255, 0.93);
@@ -168,34 +99,19 @@
         }
         header h1 { margin: 0; font-size: 2.4rem; color: #f07d96; }
         header p { margin: 5px 0 0 0; color: #8c7679; font-size: 1.15rem; font-style: italic; }
-        .header-info { flex: 1; }
         .img-chii { width: 70px; height: auto; object-fit: contain; }
 
-        .separador-cute { text-align: center; margin: 25px 0; }
-        .separador-cute img { max-width: 100%; height: auto; object-fit: contain; }
-
         .search-container { margin-bottom: 20px; width: 100%; }
-        .search-input {
-            width: 100%; padding: 12px 15px; font-family: 'Times New Roman', Times, serif; font-size: 1.1rem;
-            border: 2px solid #f5d6dc; border-radius: 12px; background-color: rgba(255, 255, 255, 0.95); color: #4d3d40; outline: none;
-        }
-        .main-layout { display: block; width: 100%; }
+        .search-input { width: 100%; padding: 12px 15px; font-family: 'Times New Roman', Times, serif; font-size: 1.1rem; border: 2px solid #f5d6dc; border-radius: 12px; background-color: rgba(255, 255, 255, 0.95); color: #4d3d40; outline: none; }
+        
         .productos-grid { display: block; width: 100%; margin-bottom: 15px; }
-        .card {
-            background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 16px;
-            border: 2px solid #f5d6dc; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 15px; width: 100%;
-        }
-        .card h3 { margin: 5px 0 5px 0; font-size: 1.3rem; color: #4d3d40; }
-        .contenedor-imagenes { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; background: #fffcfc; border-radius: 10px; }
+        .card { background: rgba(255, 255, 255, 0.95); border-radius: 16px; padding: 16px; border: 2px solid #f5d6dc; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 15px; width: 100%; }
+        .card h3 { margin: 5px 0; font-size: 1.3rem; color: #4d3d40; }
         .img-producto { width: 100%; height: 280px; object-fit: contain; border-radius: 10px; border: 1px solid #f5d6dc; background-color: #fffcfc; }
-        .card .img-producto-doble { flex: 0 0 auto; width: 70%; height: 250px; object-fit: contain; border-radius: 10px; border: 1px solid #f5d6dc; background-color: #fffcfc; }
         .desc-tag { font-size: 0.95rem; color: #6e5a5c; margin: 0 0 8px 0; font-style: italic; }
         .precio-tag { font-weight: bold; color: #f07d96; font-size: 1.2rem; margin: 0 0 5px 0; }
         .stock-tag { font-size: 0.9rem; color: #8c7679; background: #fff0f2; padding: 3px 8px; border-radius: 6px; display: inline-block; border: 1px solid #f5d6dc; margin-bottom: 10px; }
         .controles-compra { background: #fffcfc; border-top: 1px dashed #f5d6dc; padding-top: 10px; }
-        .control-group { margin-bottom: 8px; }
-        .control-group label { display: block; font-size: 0.85rem; color: #8c7679; font-weight: bold; margin-bottom: 3px; }
-        .controles-compra select { width: 100%; padding: 8px; border: 2px solid #f5d6dc; border-radius: 8px; background-color: white; color: #4d3d40; font-family: 'Times New Roman', Times, serif; font-size: 1rem; }
         .btn-agregar { background-color: #ffa6b9; color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: 'Times New Roman', Times, serif; width: 100%; font-size: 1.05rem; margin-top: 5px; }
         .btn-agregar:disabled { background-color: #e0e0e0; color: #a0a0a0; cursor: not-allowed; }
         
@@ -203,39 +119,16 @@
         .panel-carrito h2 { margin: 0 0 15px 0; font-size: 1.5rem; color: #4d3d40; border-bottom: 2px solid #f5d6dc; padding-bottom: 6px; }
         .carrito-vacio { color: #8c7679; text-align: center; padding: 20px 10px; font-style: italic; font-size: 1.1rem; }
         .item-carrito { display: flex; justify-content: space-between; align-items: center; background: #fff0f2; padding: 10px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #f5d6dc; }
-        .item-info { width: 80%; }
-        .item-info strong { display: block; font-size: 1.05rem; }
         .btn-eliminar { background: #ff6b81; color: white; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 0.9rem; cursor: pointer; }
         .total-seccion { border-top: 2px dashed #f5d6dc; padding-top: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .total-monto { font-size: 1.6rem; font-weight: bold; color: #f07d96; }
         .btn-checkout { background-color: #f07d96; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-family: 'Times New Roman', Times, serif; width: 100%; font-size: 1.15rem; }
         .btn-checkout:disabled { background-color: #e0e0e0; color: #a0a0a0; }
-        
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(77, 61, 64, 0.6); justify-content: center; align-items: center; z-index: 1000; padding: 10px; }
-        .modal-content { background: white; padding: 20px; border-radius: 20px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; border: 2px solid #f5d6dc; }
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #f5d6dc; border-radius: 8px; font-size: 1rem; font-family: 'Times New Roman', Times, serif; }
-        .box-cotizacion { background: #fff8f9; border: 2px solid #f5d6dc; border-radius: 10px; padding: 12px; margin-top: 8px; }
-        .opcion-envio { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px; border: 1px solid #f5d6dc; margin-top: 6px; cursor: pointer; }
-        .opcion-envio input { width: auto !important; margin-right: 8px; }
-        .tabla-referencia-envios { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.85rem; }
-        .tabla-referencia-envios th, .tabla-referencia-envios td { border: 1px solid #f5d6dc; padding: 6px; text-align: left; }
-        .tabla-referencia-envios th { background-color: #fff0f2; color: #f07d96; }
-        .info-pago-box { background: #f0f7ff; border-left: 4px solid #3b82f6; padding: 12px; margin: 10px 0; font-size: 0.95rem; line-height: 1.5; border-radius: 4px; }
-        .btn-submit { width: 100%; padding: 12px; border-radius: 10px; border: none; color: white; font-weight: bold; font-size: 1.1rem; font-family: 'Times New Roman', Times, serif; cursor: pointer; }
 
-        /* ICONO FLOTANTE DE WHATSAPP */
-        .btn-whatsapp-flotante {
-            position: fixed; bottom: 25px; right: 25px; background-color: #25d366; color: white;
-            width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); z-index: 999; text-decoration: none;
-        }
+        .btn-whatsapp-flotante { position: fixed; bottom: 25px; right: 25px; background-color: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); z-index: 999; text-decoration: none; }
         .btn-whatsapp-flotante svg { width: 35px; height: 35px; fill: white; }
         
-        @media (max-width: 1150px) {
-            .decoracion-lateral-izq, .decoracion-lateral-der { display: none; }
-        }
+        @media (max-width: 1150px) { .decoracion-lateral-izq, .decoracion-lateral-der { display: none; } }
     </style>
 </head>
 <body>
@@ -243,10 +136,15 @@
 <!-- BOTÓN MENÚ 3 LÍNEAS -->
 <button class="btn-menu-hamburguesa" onclick="abrirMenuLateral()">☰</button>
 
-<!-- BOTÓN SUPERIOR DE CARRITO CON ACCESO DIRECTO -->
+<!-- BOTÓN SUPERIOR DE CARRITO -->
 <button class="btn-carrito-superior" onclick="irAlCarrito()">
     🛒 <span id="badge-cant" class="badge-cant-carrito">0</span>
 </button>
+
+<!-- NOTIFICACIÓN TOAST PRODUCTO AGREGADO -->
+<div id="toast-agregado" class="toast-notificacion">
+    ✨ <span id="txt-toast-prod">Producto</span> agregado al carrito (っ•‿•)っ
+</div>
 
 <!-- OVERLAY Y MENÚ LATERAL -->
 <div id="overlay-menu" class="overlay-menu" onclick="cerrarMenuLateral()"></div>
@@ -271,10 +169,8 @@
 </div>
 
 <!-- BOTÓN FLOTANTE WHATSAPP -->
-<a href="https://wa.me/5492932440521?text=Hola!%20Tengo%20una%20duda%20sobre%20un%20pedido%20de%20la%20tienda" class="btn-whatsapp-flotante" target="_blank" title="¿Tenes alguna duda? ¡Escribinos!">
-    <svg viewBox="0 0 24 24">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.51 5.284 3.508 8.492-.004 6.66-5.34 11.997-11.953 11.997-2.005-.001-3.973-.503-5.714-1.458L0 24zm6.59-4.846c1.66.986 3.298 1.448 5.355 1.449 5.546 0 10.058-4.478 10.062-9.966.002-2.659-1.03-5.159-2.906-7.038-1.876-1.88-4.373-2.914-7.031-2.915-5.553 0-10.065 4.48-10.069 9.968-.001 2.15.57 4.148 1.651 5.867l-1.08 3.944 4.018-1.043z"/>
-    </svg>
+<a href="https://wa.me/5492932440521?text=Hola!%20Tengo%20una%20duda%20sobre%20un%20pedido%20de%20la%20tienda" class="btn-whatsapp-flotante" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.51 5.284 3.508 8.492-.004 6.66-5.34 11.997-11.953 11.997-2.005-.001-3.973-.503-5.714-1.458L0 24zm6.59-4.846c1.66.986 3.298 1.448 5.355 1.449 5.546 0 10.058-4.478 10.062-9.966.002-2.659-1.03-5.159-2.906-7.038-1.876-1.88-4.373-2.914-7.031-2.915-5.553 0-10.065 4.48-10.069 9.968-.001 2.15.57 4.148 1.651 5.867l-1.08 3.944 4.018-1.043z"/></svg>
 </a>
 
 <div class="decoracion-lateral-izq">
@@ -290,32 +186,24 @@
 
 <div class="wrapper">
     <div class="logo-contenedor">
-        <img src="logo.png" onerror="this.src='logo.PNG'; this.onerror=function(){this.src='logo.jpg'; this.onerror=function(){this.src='logo.JPG';};};" class="logo-tienda" alt="Logo">
+        <img src="logo.png" onerror="this.src='logo.PNG'; this.onerror=function(){this.src='logo.jpg';};" class="logo-tienda" alt="Logo">
     </div>
 
     <header>
-        <img src="chii.png" class="img-chii" onerror="this.src='chii.PNG'; this.onerror=function(){this.src='chii.webp';};">
+        <img src="chii.png" class="img-chii" onerror="this.src='chii.PNG';">
         <div class="header-info">
             <h1>Usachis Treasure</h1>
             <p>Elige tus cositas favoritas (｡◕‿◕｡) ➜</p>
         </div>
-        <img src="chii.png" class="img-chii" onerror="this.src='chii.PNG'; this.onerror=function(){this.src='chii.webp';};">
+        <img src="chii.png" class="img-chii" onerror="this.src='chii.PNG';">
     </header>
 
     <div class="search-container">
-        <input type="text" id="input-busqueda" class="search-input" placeholder="‹3 Buscar productos... (ej: llavero, sticker, ddlc)" oninput="filtrarProductos()">
-    </div>
-
-    <div class="separador-cute">
-        <img src="pastelitos.png" onerror="this.src='pastelitos.PNG'; this.onerror=function(){this.src='pastelitos.jpg'; this.onerror=function(){this.src='pastelitos.JPG';};};" alt="Separador">
+        <input type="text" id="input-busqueda" class="search-input" placeholder="‹3 Buscar productos..." oninput="filtrarProductos()">
     </div>
 
     <div class="main-layout">
         <div class="productos-grid" id="contenedor-productos"></div>
-
-        <div class="separador-cute">
-            <img src="espirales.png" onerror="this.src='espirales.PNG'; this.onerror=function(){this.src='espirales.jpg'; this.onerror=function(){this.src='espirales.JPG';};};" alt="Separador">
-        </div>
 
         <div class="panel-carrito" id="seccion-carrito">
             <h2>‹3 Tu Pedido (•‿•)</h2>
@@ -326,123 +214,27 @@
                 <h3>Total actual:</h3>
                 <div class="total-monto">$<span id="txt-total">0</span></div>
             </div>
-            <button id="btn-comprar" class="btn-checkout" onclick="abrirDatosCliente()" disabled>Comprar Ahora (｡♥‿♥｡)</button>
+            <button id="btn-comprar" class="btn-checkout" onclick="enviarPedidoWA()" disabled>Enviar pedido por WhatsApp (｡♥‿♥｡)</button>
         </div>
-    </div>
-</div>
-
-<!-- MODAL DATOS CLIENTE Y ENVÍOS -->
-<div id="modal-datos" class="modal">
-    <div class="modal-content">
-        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Tus Datos y Envío</h2>
-        <form id="form-datos-cliente">
-            <div class="form-group">
-                <label>Nombre:</label>
-                <input type="text" id="inp-nombre" required placeholder="Tu nombre">
-            </div>
-            <div class="form-group">
-                <label>Apellido:</label>
-                <input type="text" id="inp-apellido" required placeholder="Tu apellido">
-            </div>
-            <div class="form-group">
-                <label>Teléfono Celular:</label>
-                <input type="tel" id="inp-telefono" required placeholder="Ej: 1123456789">
-            </div>
-
-            <!-- SECCIÓN DE CÓDIGO POSTAL Y SELECCIÓN DE ENVÍO -->
-            <div class="form-group">
-                <label>Código Postal (CP):</label>
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="inp-cp" placeholder="Ej: 8109 o 4000" maxlength="5" required>
-                    <button type="button" onclick="calcularCotizacionEnvio()" style="background:#ffa6b9; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Cotizar</button>
-                </div>
-                <small style="color:#8c7679; font-style:italic;">Punta Alta: 8109 ($2500)</small>
-            </div>
-
-            <div id="box-opciones-envio" class="box-cotizacion" style="display:none;">
-                <label style="font-weight:bold; color:#4d3d40;">Selecciona la opción de envío:</label>
-                <div id="contenedor-radio-envios"></div>
-
-                <!-- TABLA REFERENCIAL DE COSTOS APROXIMADOS -->
-                <div style="margin-top:12px; border-top:1px dashed #f5d6dc; padding-top:8px;">
-                    <small style="font-weight:bold; color:#f07d96;">Tabla referencial de envíos (Aproximados):</small>
-                    <table class="tabla-referencia-envios">
-                        <thead>
-                            <tr>
-                                <th>Destino</th>
-                                <th>Sucursal</th>
-                                <th>Domicilio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><b>Punta Alta (Local)</b></td>
-                                <td>-</td>
-                                <td>$2.500 (o Gratis)</td>
-                            </tr>
-                            <tr>
-                                <td><b>Bs. As. / CABA / La Pampa</b></td>
-                                <td>$6.995</td>
-                                <td>Consultar por Privado</td>
-                            </tr>
-                            <tr>
-                                <td><b>Norte (Jujuy, Salta, Tucumán, etc.)</b></td>
-                                <td>$7.995</td>
-                                <td>Consultar por Privado</td>
-                            </tr>
-                            <tr>
-                                <td><b>Sur / Patagonia</b></td>
-                                <td>$7.995</td>
-                                <td>Consultar por Privado</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- CAMPOS DINÁMICOS DE DIRECCIÓN / SUCURSAL -->
-            <div class="form-group" id="grupo-direccion" style="display:none; margin-top:10px;">
-                <label id="lbl-direccion">Dirección / Sucursal Preferida:</label>
-                <input type="text" id="inp-direccion" placeholder="Ej: Av. Jujuy 123 o Sucursal Centro">
-            </div>
-
-            <div class="form-group" id="grupo-localidad" style="display:none;">
-                <label>Localidad y Provincia:</label>
-                <input type="text" id="inp-localidad" placeholder="Ej: San Miguel de Tucumán, Tucumán">
-            </div>
-
-            <button type="submit" id="btn-continuar-datos" class="btn-submit" style="background-color:#ffa6b9; margin-top:10px;" disabled>Continuar al Pago (っ•‿•)っ</button>
-        </form>
-    </div>
-</div>
-
-<!-- MODAL MODO PAGO -->
-<div id="modal-pago" class="modal">
-    <div class="modal-content">
-        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Modo de Pago</h2>
-        <p style="margin: 5px 0 15px 0; font-size:1.1rem;">Total a abonar ahora: <b>$<span id="txt-monto-final">0</span></b></p>
-        <p id="txt-aviso-domicilio" style="color:#d9534f; font-size:0.9rem; display:none;"><i>* Para envíos a domicilio con Correo Argentino, el costo final del envío se cotizará y acordará por privado.</i></p>
-
-        <div class="form-group">
-            <label>Medio de pago disponible:</label>
-            <select id="sel-pago">
-                <option value="mercadopago">Mercado Pago / Transferencia (Alias: usachis)</option>
-                <option value="efectivo">Efectivo (Solo Punto de Encuentro / Punta Alta)</option>
-            </select>
-        </div>
-
-        <div class="info-pago-box">
-            <strong>‹3 Datos para transferir:</strong><br>
-            • Alias: <b>usachis</b><br>
-            • Titular: <b>Violeta Toconas</b> (Banco Nación)<br><br>
-            <i>Podés abonar con transferencia desde cualquier banco o Mercado Pago. Si estás en Punta Alta, también podés abonar en efectivo al retirar. Mandá el comprobante al finalizar por WhatsApp.</i>
-        </div>
-
-        <button id="btn-confirmar-final" class="btn-submit" style="background-color:#f07d96; margin-top:10px;" onclick="enviarPedidoFinal()">Aceptar y Enviar Pedido (っˆڡˆς)</button>
     </div>
 </div>
 
 <script>
+    // CONFIGURACIÓN DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCN1nkAt_zpk3GQvrXhcbNprQDZKh-YlgI",
+        authDomain: "usachistresure-604e5.firebaseapp.com",
+        databaseURL: "https://usachistresure-604e5-default-rtdb.firebaseio.com",
+        projectId: "usachistresure-604e5",
+        storageBucket: "usachistresure-604e5.firebasestorage.app",
+        messagingSenderId: "51321605808",
+        appId: "1:51321605808:web:5120eced32394670223575",
+        measurementId: "G-6W5VMNKS1S"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     function abrirMenuLateral() {
         document.getElementById("menu-lateral").classList.add("abierto");
         document.getElementById("overlay-menu").style.display = "block";
@@ -454,76 +246,41 @@
     }
 
     function irAlCarrito() {
-        const elementoCarrito = document.getElementById("seccion-carrito");
-        if (elementoCarrito) {
-            elementoCarrito.scrollIntoView({ behavior: 'smooth' });
-        }
+        document.getElementById("seccion-carrito").scrollIntoView({ behavior: 'smooth' });
     }
 
-    function intentarCargarImagenProducto(elemento, baseSrc) {
-        let extensiones = ['.jpg', '.JPG', '.png', '.PNG', '.jpeg', '.JPEG'];
-        let nombreSinExt = baseSrc.substring(0, baseSrc.lastIndexOf('.'));
-        let indiceActual = 0;
-
-        elemento.onerror = function() {
-            if (indiceActual < extensiones.length) {
-                let nuevaRuta = nombreSinExt + extensiones[indiceActual];
-                indiceActual++;
-                this.src = nuevaRuta;
-            } else {
-                this.onerror = null; 
-                this.style.display = 'none';
-            }
-        };
+    function mostrarToastNotificacion(nombreProducto) {
+        const toast = document.getElementById("toast-agregado");
+        document.getElementById("txt-toast-prod").innerText = nombreProducto;
+        toast.style.display = "flex";
+        setTimeout(() => { toast.style.display = "none"; }, 2500);
     }
 
-    const inventario = [
-        { id: 1, categoria: "cositas minis", nombre: "Hebillas estrella", esPromo: true, pUnidad: 500, cPromo: 3, pPromo: 1300, stock: 50, desc: "¡Hermoso accesorio para tu cabello!", img: ["hebillasestrella.jpg"] },
-        { id: 2, categoria: "stickers", nombre: "Stickers Sanrio", esPromo: true, pUnidad: 300, cPromo: 5, pPromo: 1300, stock: 46, desc: "Medidas aproximadas: 5,4 x 5,4 cm", img: ["stickerssanrio.jpg"] },
-        { id: 3, categoria: "stickers", nombre: "Stickers Chiikawa", esPromo: true, pUnidad: 300, cPromo: 5, pPromo: 1300, stock: 59, desc: "Medidas aproximadas: 4 x 3,5 cm", img: ["stickerschiikawa.jpg"] },
-        { id: 4, categoria: "cositas minis", nombre: "Straps estrella", esPromo: false, precio: 2500, stock: 5, desc: "Hermosos colgantes estrella para tu celu.", tieneVariantes: true, variantes: ["Morado", "Rosa", "Celeste", "Amarillo", "Verde"], img: ["strapsestrella.jpg"] },
-        { id: 5, categoria: "llaveros", nombre: "Llavero PJSK", esPromo: false, precio: 3500, stock: 18, desc: "Medidas aproximadas: 5x4 cm. ¡Elegí tu personaje!", tieneVariantes: true, variantes: ["Mafuyu", "Ena", "Mizuki", "Akito", "Toya", "An", "Kohane", "Airi", "Minori", "Haruka", "Tsukasa", "Emu", "Nene", "Ichika", "Saki", "Honami", "Shiho", "Kanade"], img: ["llaverospjsk.jpg"] },
-        { id: 6, categoria: "llaveros", nombre: "Llavero Chiikawa", esPromo: false, precio: 5500, stock: 3, desc: "Medidas aproximadas: 10x7 cm", img: ["llaverochiikawa.jpg"] },
-        { id: 7, categoria: "stickers", nombre: "Post it Pompurin", esPromo: false, precio: 2500, stock: 2, desc: "Medidas aproximadas: 7x12 cm", img: ["postitpompompurin.jpg"] },
-        { id: 8, categoria: "stickers", nombre: "Post it Chocomenta", esPromo: false, precio: 2500, stock: 3, desc: "Medidas aproximadas: 7x15 cm", img: ["postitchocomenta.jpg"] },
-        { id: 9, categoria: "monederos", nombre: "Billetera", esPromo: false, precio: 3500, stock: 5, desc: "Medidas aproximadas: 11x8 cm. Diseños súper lindos.", tieneVariantes: true, variantes: ["Kuromi", "Kuromi Púrpura", "Pompompurin", "Cinnamoroll", "My Melody"], img: ["billeteras.jpg"] },
-        { id: 10, categoria: "stickers", nombre: "Plancha de stickers chiikawa", esPromo: false, precio: 3500, stock: 10, desc: "¡Llená de ternura tus cuadernos!", img: ["planchastickerchiikawa.jpg"] },
-        { id: 11, categoria: "acrilicos", nombre: "Porta photocards", esPromo: false, precio: 5000, stock: 6, desc: "Protegé tus cartas favoritas con estilo.", tieneVariantes: true, variantes: ["Black flower", "White notes", "Kaomoji rosa", "Kaomoji negro"], img: ["portaphotocard1.jpg", "portaphotocard2.jpg", "portaphotocard3.jpg", "portaphotocard4.jpg"] },
-        { id: 12, categoria: "llaveros", nombre: "Llaveros DDLC", esPromo: false, precio: 4000, stock: 4, desc: "Tamaño aproximado: 5,5 cm. Del videojuego Doki Doki Literature Club.", tieneVariantes: true, variantes: ["Monika", "Sayori", "Natsuki", "Yuri"], img: ["llaverosddlc.jpg"] },
-        { id: 13, categoria: "acrilicos", nombre: "Figura acrilico DDLC", esPromo: false, precio: 5000, stock: 4, desc: "Tamaño aproximado: 6 cm. Perfectas para adornar tu espacio.", tieneVariantes: true, variantes: ["Monika", "Sayori", "Natsuki", "Yuri"], img: ["figuraacrilicoddlc.jpg"] },
-        { id: 14, categoria: "llaveros", nombre: "Llaveros TBHK", esPromo: false, precio: 4000, stock: 7, desc: "Tamaño aproximado: 5,5 cm. De Toilet-Bound Hanako-kun.", tieneVariantes: true, variantes: ["Tsukasa", "Hanako", "Nene", "Kou", "Sakura", "Sosuke", "Tsuchigomori"], img: ["llaverostbhk.jpg"] },
-        { id: 15, categoria: "cositas minis", nombre: "Hebillas polka dots", esPromo: false, precio: 2500, stock: 12, desc: "El precio corresponde a un par.", img: ["hebillaspolka.jpg"] },
-        { id: 16, categoria: "monederos", nombre: "Monedero manzana", esPromo: false, precio: 4500, stock: 2, desc: "Lindo y práctico accesorio para tus monedas.", tieneVariantes: true, variantes: ["Manzana verde", "Manzana roja"], img: ["monederomanzana.jpg"] },
-        { id: 17, categoria: "cositas minis", nombre: "Hebillas pez", esPromo: false, precio: 2800, stock: 6, desc: "El precio corresponde a un par.", img: ["hebillaspez.jpg"] },
-        { id: 18, categoria: "cositas minis", nombre: "Collar murciélago gótico", esPromo: false, precio: 5000, stock: 3, desc: "Accesorio dark súper único.", img: ["collarmurcielago.jpg"] },
-        { id: 19, categoria: "llaveros", nombre: "Llavero foca", esPromo: false, precio: 3500, stock: 8, desc: "Una foca marina muy cute para llevar con vos.", img: ["llaverofoca.jpg"] },
-        { id: 20, categoria: "monederos", nombre: "Cartuchera", esPromo: false, precio: 0, stock: 3, desc: "¡Guardá todos tus lápices!", tieneVariantes: true, variantes: ["Gatito", "My Melody"], usaPrecioVariante: true, img: ["cartucheragatito.jpg", "cartucheramymelody.jpg"] },
-        { id: 21, categoria: "cositas minis", nombre: "Pines cute", esPromo: false, precio: 1700, stock: 12, desc: "Tamaño aproximado: 25 mm. Geniales para tu mochila.", img: ["pinescute1.jpg", "pinescute2.jpg"] },
-        { id: 22, categoria: "llaveros", nombre: "Llaveros alien stage", esPromo: false, precio: 3500, stock: 6, desc: "¡Llená a tus personajes favoritos de ALNST!", tieneVariantes: true, variantes: ["Hyuna", "Luka", "Ivan", "Till", "Mizi", "Sua"], img: ["llaverosalienstage.jpg"] }
+    let inventario = [
+        { id: 1, categoria: "cositas minis", nombre: "Hebillas estrella", precio: 500, stock: 50, desc: "¡Hermoso accesorio para tu cabello!", img: ["hebillasestrella.jpg"] },
+        { id: 2, categoria: "stickers", nombre: "Stickers Sanrio", precio: 300, stock: 46, desc: "Medidas: 5,4 x 5,4 cm", img: ["stickerssanrio.jpg"] },
+        { id: 3, categoria: "stickers", nombre: "Stickers Chiikawa", precio: 300, stock: 59, desc: "Medidas: 4 x 3,5 cm", img: ["stickerschiikawa.jpg"] },
+        { id: 4, categoria: "cositas minis", nombre: "Straps estrella", precio: 2500, stock: 5, desc: "Colgantes para celulares.", img: ["strapsestrella.jpg"] },
+        { id: 5, categoria: "llaveros", nombre: "Llavero PJSK", precio: 3500, stock: 18, desc: "Llaveros varios personajes.", img: ["llaverospjsk.jpg"] },
+        { id: 6, categoria: "llaveros", nombre: "Llavero Chiikawa", precio: 5500, stock: 3, desc: "Medidas: 10x7 cm", img: ["llaverochiikawa.jpg"] },
+        { id: 7, categoria: "stickers", nombre: "Post it Pompurin", precio: 2500, stock: 2, desc: "Medidas: 7x12 cm", img: ["postitpompompurin.jpg"] },
+        { id: 8, categoria: "stickers", nombre: "Post it Chocomenta", precio: 2500, stock: 2, desc: "Medidas: 7x15 cm", img: ["postitchocomenta.jpg"] },
+        { id: 9, categoria: "monederos", nombre: "Billetera", precio: 3500, stock: 5, desc: "Billeteras Sanrio.", img: ["billeteras.jpg"] }
     ];
 
-    let stockVariantes = {
-        "Straps estrella": { "Morado": 1, "Rosa": 1, "Celeste": 1, "Amarillo": 1, "Verde": 1 },
-        "Llavero PJSK": { "Mafuyu": 1, "Ena": 1, "Mizuki": 1, "Akito": 1, "Toya": 1, "An": 1, "Kohane": 1, "Airi": 1, "Minori": 1, "Haruka": 1, "Tsukasa": 1, "Emu": 1, "Nene": 1, "Ichika": 1, "Saki": 1, "Honami": 1, "Shiho": 1, "Kanade": 1 },
-        "Billetera": { "Kuromi": 1, "Kuromi Púrpura": 1, "Pompompurin": 1, "Cinnamoroll": 1, "My Melody": 1 },
-        "Porta photocards": { "Black flower": 2, "White notes": 2, "Kaomoji rosa": 1, "Kaomoji negro": 1 },
-        "Llaveros DDLC": { "Monika": 1, "Sayori": 1, "Natsuki": 1, "Yuri": 1 },
-        "Figura acrilico DDLC": { "Monika": 1, "Sayori": 1, "Natsuki": 1, "Yuri": 1 },
-        "Llaveros TBHK": { "Tsukasa": 1, "Hanako": 1, "Nene": 1, "Kou": 1, "Sakura": 1, "Sosuke": 1, "Tsuchigomori": 1 },
-        "Monedero manzana": { "Manzana verde": 1, "Manzana roja": 1 },
-        "Cartuchera": { "Gatito": 2, "My Melody": 1 },
-        "Llaveros alien stage": { "Hyuna": 1, "Luka": 1, "Ivan": 1, "Till": 1, "Mizi": 1, "Sua": 1 }
-    };
-
-    const preciosVariantes = {
-        "Cartuchera": { "Gatito": 8000, "My Melody": 10000 }
-    };
-
     let carrito = [];
-    let cliente = {};
-    let costoEnvioSeleccionado = 0;
-    let tipoEnvioTexto = "";
     let categoriaFiltroActual = "todos";
+
+    // SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
+    db.ref('inventario').on('value', snapshot => {
+        const data = snapshot.val();
+        if (data) {
+            inventario = data;
+            inicializarTienda();
+        } else {
+            db.ref('inventario').set(inventario);
+        }
+    });
 
     function inicializarTienda() {
         const contenedor = document.getElementById("contenedor-productos");
@@ -531,82 +288,24 @@
         contenedor.innerHTML = "";
 
         inventario.forEach(prod => {
-            let opcionesVariante = "";
-            let selectorModelos = "";
-            let elementoImagen = "";
-
-            if (prod.img && prod.img.length > 0) {
-                elementoImagen = `<div class="contenedor-imagenes">`;
-                prod.img.forEach(src => {
-                    let claseImg = prod.img.length > 1 ? "img-producto-doble" : "img-producto";
-                    elementoImagen += `<img src="${src}" class="${claseImg}" onload="this.onerror=null;" onerror="intentarCargarImagenProducto(this, '${src}')" alt="">`;
-                });
-                elementoImagen += `</div>`;
-            }
-
-            let precioAMostrar = prod.esPromo ? `Unidad: $${prod.pUnidad} | Pack: $${prod.pPromo}` : `$${prod.precio} c/u`;
-            if (prod.usaPrecioVariante) {
-                precioAMostrar = "Gatito: $8000 | My Melody: $10000";
-            }
-
-            if (prod.esPromo) {
-                opcionesVariante = `
-                    <div class="control-group">
-                        <label>Opción de precio:</label>
-                        <select id="sel-tipo-${prod.id}" onchange="cambiarVarianteCantidad(${prod.id})">
-                            <option value="unidad">1 unidad ($${prod.pUnidad})</option>
-                            <option value="promo">${prod.cPromo} unidades ($${prod.pPromo})</option>
-                        </select>
-                    </div>
-                `;
-            }
-
-            if (prod.tieneVariantes) {
-                let opcionesHTML = "";
-                prod.variantes.forEach(v => {
-                    const disp = stockVariantes[prod.nombre][v];
-                    if (disp > 0) {
-                        opcionesHTML += `<option value="${v}">${v}</option>`;
-                    }
-                });
-
-                if (opcionesHTML === "") {
-                    selectorModelos = `
-                        <div class="control-group">
-                            <label>Modelo / Variante:</label>
-                            <select id="sel-modelo-${prod.id}" disabled><option>Modelos Agotados</option></select>
-                        </div>`;
-                } else {
-                    selectorModelos = `
-                        <div class="control-group">
-                            <label>Modelo / Variante:</label>
-                            <select id="sel-modelo-${prod.id}" onchange="actualizarSelectorCantidad(${prod.id})">${opcionesHTML}</select>
-                        </div>`;
-                }
-            }
-
             contenedor.innerHTML += `
-                <div class="card" data-cat="${prod.categoria}" data-nombre="${prod.nombre.toLowerCase()}" data-desc="${prod.desc.toLowerCase()}">
+                <div class="card" data-cat="${prod.categoria}" data-nombre="${prod.nombre.toLowerCase()}">
                     <div>
-                        ${elementoImagen}
+                        <img src="${prod.img[0]}" class="img-producto" alt="">
                         <h3>${prod.nombre}</h3>
                         <p class="desc-tag">${prod.desc}</p>
-                        <p class="precio-tag">${precioAMostrar}</p>
-                        <span class="stock-tag">Stock: <span id="stock-val-${prod.id}">${prod.stock}</span> disp.</span>
+                        <p class="precio-tag">$${prod.precio} c/u</p>
+                        <span class="stock-tag">Stock: <b>${prod.stock}</b> disp.</span>
                     </div>
                     <div class="controles-compra">
-                        ${selectorModelos}
-                        ${opcionesVariante}
-                        <div class="control-group">
-                            <label>Cantidad:</label>
-                            <select id="sel-cant-${prod.id}"></select>
-                        </div>
-                        <button id="btn-add-${prod.id}" class="btn-agregar" onclick="agregarProductoAlCarrito(${prod.id})">Agregar (っ•‿•)っ</button>
+                        <button class="btn-agregar" ${prod.stock <= 0 ? 'disabled' : ''} onclick="agregarProductoAlCarrito(${prod.id})">
+                            ${prod.stock > 0 ? 'Agregar (っ•‿•)っ' : 'Agotado (´•__•`)'}
+                        </button>
                     </div>
                 </div>
             `;
-            actualizarSelectorCantidad(prod.id);
         });
+        filtrarProductos();
     }
 
     function filtrarCategoria(cat) {
@@ -621,10 +320,9 @@
 
         tarjetas.forEach(tarjeta => {
             const nombre = tarjeta.getAttribute("data-nombre");
-            const descripcion = tarjeta.getAttribute("data-desc");
             const categoria = tarjeta.getAttribute("data-cat");
 
-            const coincideTexto = nombre.includes(textoBusqueda) || descripcion.includes(textoBusqueda);
+            const coincideTexto = nombre.includes(textoBusqueda);
             const coincideCategoria = (categoriaFiltroActual === "todos" || categoria === categoriaFiltroActual);
 
             if (coincideTexto && coincideCategoria) {
@@ -635,142 +333,25 @@
         });
     }
 
-    function actualizarSelectorCantidad(id) {
-        const prod = inventario.find(p => p.id === id);
-        const selectorCant = document.getElementById(`sel-cant-${id}`);
-        const selectorTipo = document.getElementById(`sel-tipo-${id}`);
-        const selectorMod = document.getElementById(`sel-modelo-${id}`);
-        const btn = document.getElementById(`btn-add-${id}`);
-        
-        if (!selectorCant) return;
-        selectorCant.innerHTML = "";
-
-        let stockDisponible = prod.stock;
-
-        if (prod.tieneVariantes && selectorMod) {
-            const modeloSeleccionado = selectorMod.value;
-            stockDisponible = stockVariantes[prod.nombre][modeloSeleccionado] || 0;
-        }
-
-        if (stockDisponible <= 0 || prod.stock <= 0) {
-            selectorCant.innerHTML = '<option value="0">Sin stock (´•__•`)</option>';
-            if(btn) btn.disabled = true;
-            return;
-        }
-
-        if(btn) btn.disabled = false;
-        let incremento = 1;
-        let maximo = stockDisponible;
-
-        if (selectorTipo && selectorTipo.value === "promo") {
-            incremento = prod.cPromo;
-            maximo = Math.floor(stockDisponible / prod.cPromo) * prod.cPromo;
-
-            if (maximo === 0) {
-                selectorCant.innerHTML = '<option value="0">Falta stock para pack</option>';
-                if(btn) btn.disabled = true;
-                return;
-            }
-        }
-
-        for (let i = incremento; i <= maximo; i += incremento) {
-            if (selectorTipo && selectorTipo.value === "promo") {
-                selectorCant.innerHTML += `<option value="${i}">${i / prod.cPromo} Pack(s) (${i} uds)</option>`;
-            } else {
-                selectorCant.innerHTML += `<option value="${i}">${i} unidad(es)</option>`;
-            }
-        }
-    }
-
-    function cambiarVarianteCantidad(id) {
-        actualizarSelectorCantidad(id);
-    }
-
     function agregarProductoAlCarrito(id) {
         const prod = inventario.find(p => p.id === id);
-        const selectorCant = document.getElementById(`sel-cant-${id}`);
-        const selectorTipo = document.getElementById(`sel-tipo-${id}`);
-        const selectorMod = document.getElementById(`sel-modelo-${id}`);
-        const cantidadAComprar = parseInt(selectorCant.value);
+        if (prod.stock <= 0) return;
 
-        if (cantidadAComprar <= 0 || isNaN(cantidadAComprar)) return;
+        prod.stock -= 1;
+        carrito.push({ ...prod });
 
-        let txtNombre = prod.nombre;
-        let modeloElegido = "";
-        let precioBaseCalculo = prod.precio;
-
-        if (prod.tieneVariantes && selectorMod) {
-            modeloElegido = selectorMod.value;
-            txtNombre = `${prod.nombre}. ${modeloElegido}`;
-            stockVariantes[prod.nombre][modeloElegido] -= cantidadAComprar;
-            
-            if (prod.usaPrecioVariante) {
-                precioBaseCalculo = preciosVariantes[prod.nombre][modeloElegido];
-            }
-        }
-
-        let costoFinal = 0;
-        if (prod.esPromo && selectorTipo && selectorTipo.value === "promo") {
-            const packs = cantidadAComprar / prod.cPromo;
-            costoFinal = packs * prod.pPromo;
-            txtNombre += ` (Pack x${prod.cPromo})`;
-        } else if (prod.esPromo) {
-            costoFinal = cantidadAComprar * prod.pUnidad;
-        } else {
-            costoFinal = cantidadAComprar * precioBaseCalculo;
-        }
-
-        prod.stock -= cantidadAComprar;
-
-        carrito.push({
-            idUnico: Date.now() + Math.random(),
-            idProducto: prod.id,
-            nombre: txtNombre,
-            nombreBase: prod.nombre,
-            varianteNombre: modeloElegido,
-            canvasCantidad: cantidadAComprar,
-            precio: costoFinal
-        });
-
+        mostrarToastNotificacion(prod.nombre);
         actualizarVisualCarrito();
-        inicializarTienda();
-        document.getElementById("input-busqueda").value = ""; 
-    }
-
-    function quitarDelCarrito(idUnico, idProducto, cantidad, nombreBase, varianteNombre) {
-        const prod = inventario.find(p => p.id === idProducto);
-        if (prod) prod.stock += cantidad;
-
-        if (varianteNombre) {
-            stockVariantes[nombreBase][varianteNombre] += cantidad;
-        }
-
-        carrito = carrito.filter(item => item.idUnico !== idUnico);
-
-        actualizarVisualCarrito();
-        inicializarTienda();
-    }
-
-    function obtenerTotales() {
-        let sumaDinero = 0;
-        let sumaUnidades = 0;
-        carrito.forEach(item => {
-            sumaDinero += item.precio;
-            sumaUnidades += item.canvasCantidad;
-        });
-        return { sumaDinero, sumaUnidades };
+        db.ref('inventario').set(inventario);
     }
 
     function actualizarVisualCarrito() {
         const contenedor = document.getElementById("lista-carrito");
         const btnComprar = document.getElementById("btn-comprar");
         const badgeCant = document.getElementById("badge-cant");
-        if(!contenedor) return;
         contenedor.innerHTML = "";
 
-        const { sumaDinero, sumaUnidades } = obtenerTotales();
-
-        if (badgeCant) badgeCant.innerText = sumaUnidades;
+        if (badgeCant) badgeCant.innerText = carrito.length;
 
         if (carrito.length === 0) {
             contenedor.innerHTML = '<div class="carrito-vacio">El carrito está vacío. 📋</div>';
@@ -780,213 +361,42 @@
         }
 
         if(btnComprar) btnComprar.disabled = false;
-        carrito.forEach(item => {
+        let total = 0;
+        carrito.forEach((item, index) => {
+            total += item.precio;
             contenedor.innerHTML += `
                 <div class="item-carrito">
-                    <div class="item-info">
-                        <strong>${item.nombre}</strong>
-                        <small>Cant: ${item.canvasCantidad} unidades • Subtotal: $${item.precio}</small>
-                    </div>
-                    <button class="btn-eliminar" onclick="quitarDelCarrito(${item.idUnico}, ${item.idProducto}, ${item.canvasCantidad}, '${item.nombreBase}', '${item.varianteNombre}')">✕</button>
+                    <div><strong>${item.nombre}</strong> - $${item.precio}</div>
+                    <button class="btn-eliminar" onclick="quitarDelCarrito(${index})">✕</button>
                 </div>
             `;
         });
-
-        document.getElementById("txt-total").innerText = sumaDinero;
+        document.getElementById("txt-total").innerText = total;
     }
 
-    function abrirDatosCliente() {
-        document.getElementById("modal-datos").style.display = "flex";
+    function quitarDelCarrito(index) {
+        const prodRemovido = carrito[index];
+        const prodInven = inventario.find(p => p.id === prodRemovido.id);
+        if (prodInven) prodInven.stock += 1;
+
+        carrito.splice(index, 1);
+        actualizarVisualCarrito();
+        db.ref('inventario').set(inventario);
     }
 
-    function calcularCotizacionEnvio() {
-        const cp = document.getElementById("inp-cp").value.trim();
-        const boxCotizacion = document.getElementById("box-opciones-envio");
-        const contenedorRadio = document.getElementById("contenedor-radio-envios");
-
-        if (!cp || cp.length < 4) {
-            alert("Por favor, ingresá un código postal válido (4 dígitos).");
-            return;
-        }
-
-        const cpNum = parseInt(cp);
-        contenedorRadio.innerHTML = "";
-        boxCotizacion.style.display = "block";
-
-        if (cpNum === 8109) {
-            contenedorRadio.innerHTML = `
-                <label class="opcion-envio">
-                    <div>
-                        <input type="radio" name="rad_envio" value="2500" checked onclick="seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)')">
-                        <strong>Envío a Domicilio en Punta Alta</strong>
-                    </div>
-                    <span style="color:#f07d96; font-weight:bold;">$2.500</span>
-                </label>
-                <label class="opcion-envio">
-                    <div>
-                        <input type="radio" name="rad_envio" value="0" onclick="seleccionarOpcionEnvio(0, 'Punto de Encuentro')">
-                        <strong>Punto de Encuentro (Parque Sarmiento / San Martín / Plaza Belgrano)</strong>
-                    </div>
-                    <span style="color:#25d366; font-weight:bold;">GRATIS</span>
-                </label>
-            `;
-            seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)');
-            return;
-        }
-
-        let precioSucursal = 7995;
-
-        if ((cpNum >= 1000 && cpNum <= 2000) || (cpNum >= 6000 && cpNum <= 8108)) {
-            precioSucursal = 6995;
-        }
-
-        contenedorRadio.innerHTML = `
-            <label class="opcion-envio">
-                <div>
-                    <input type="radio" name="rad_envio" value="${precioSucursal}" checked onclick="seleccionarOpcionEnvio(${precioSucursal}, 'Correo Argentino - A Sucursal')">
-                    <strong>Correo Argentino (A Sucursal)</strong>
-                </div>
-                <span style="color:#f07d96; font-weight:bold;">$${precioSucursal.toLocaleString('es-AR')}</span>
-            </label>
-            <label class="opcion-envio">
-                <div>
-                    <input type="radio" name="rad_envio" value="0" onclick="seleccionarOpcionEnvio(0, 'Correo Argentino - A Domicilio (Consultar al privado)')">
-                    <strong>Correo Argentino (A Domicilio)</strong>
-                </div>
-                <span style="color:#8c7679; font-weight:bold; font-size:0.85rem;">Consultar al privado</span>
-            </label>
-        `;
-
-        seleccionarOpcionEnvio(precioSucursal, 'Correo Argentino - A Sucursal');
-    }
-
-    function seleccionarOpcionEnvio(monto, nombreMetodo) {
-        costoEnvioSeleccionado = monto;
-        tipoEnvioTexto = nombreMetodo;
-
-        const divDir = document.getElementById("grupo-direccion");
-        const divLoc = document.getElementById("grupo-localidad");
-        const lblDir = document.getElementById("lbl-direccion");
-        const btnContinuar = document.getElementById("btn-continuar-datos");
-
-        divDir.style.display = "block";
-        divLoc.style.display = "block";
-
-        if (nombreMetodo.includes("Sucursal")) {
-            lblDir.innerText = "Sucursal de Correo Preferida:";
-            document.getElementById("inp-direccion").placeholder = "Ej: Sucursal Centro Correo Argentino";
-        } else if (nombreMetodo.includes("Encuentro")) {
-            divDir.style.display = "none";
-            divLoc.style.display = "none";
-        } else {
-            lblDir.innerText = "Dirección Completa (Calle, Nro, Piso/Dpto):";
-            document.getElementById("inp-direccion").placeholder = "Ej: Av. Jujuy 123";
-        }
-
-        btnContinuar.disabled = false;
-    }
-
-    function guardarDatosCliente() {
-        cliente = {
-            nombre: document.getElementById("inp-nombre").value,
-            apellido: document.getElementById("inp-apellido").value,
-            telefono: document.getElementById("inp-telefono").value,
-            cp: document.getElementById("inp-cp").value,
-            metodoEnvio: tipoEnvioTexto,
-            costoEnvio: costoEnvioSeleccionado,
-            direccion: document.getElementById("inp-direccion").value || "Punto de encuentro",
-            localidad: document.getElementById("inp-localidad").value || "Punta Alta"
-        };
-
-        const { sumaDinero } = obtenerTotales();
-        const totalNeto = sumaDinero + cliente.costoEnvio;
-        
-        document.getElementById("txt-monto-final").innerText = totalNeto.toLocaleString('es-AR');
-        
-        const avisoDomicilio = document.getElementById("txt-aviso-domicilio");
-        if (cliente.metodoEnvio.includes("Consultar al privado")) {
-            avisoDomicilio.style.display = "block";
-        } else {
-            avisoDomicilio.style.display = "none";
-        }
-
-        document.getElementById("modal-datos").style.display = "none";
-        document.getElementById("modal-pago").style.display = "flex";
-    }
-
-    function enviarPedidoFinal() {
-        const btnFinal = document.getElementById("btn-confirmar-final");
-        if(btnFinal) {
-            btnFinal.disabled = true;
-            btnFinal.innerText = "Procesando pedido... (u_u)";
-        }
-
-        const { sumaDinero, sumaUnidades } = obtenerTotales();
-        const totalNeto = sumaDinero + cliente.costoEnvio;
-
-        let listadoHTML = "<ul style='padding-left: 20px; line-height: 1.6;'>";
-        let textoWhatsAppProductos = "";
-        
+    function enviarPedidoWA() {
+        let texto = "Hola! Quiero realizar este pedido:\n\n";
+        let total = 0;
         carrito.forEach(item => {
-            listadoHTML += `<li><strong>${item.nombre}</strong> — Cantidad: ${item.canvasCantidad} unidades (Subtotal: $${item.precio})</li>`;
-            textoWhatsAppProductos += `• ${item.nombre} x${item.canvasCantidad}\n`;
+            texto += `• ${item.nombre} ($${item.precio})\n`;
+            total += item.precio;
         });
-        listadoHTML += "</ul>";
-
-        let envioStr = cliente.costoEnvio > 0 ? `$${cliente.costoEnvio.toLocaleString('es-AR')}` : 'A convenir / Consultar';
-        let detalleEnvioTexto = `${cliente.metodoEnvio} (${envioStr})\n📍 CP: ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}`;
-
-        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nEnvío: ${cliente.metodoEnvio} (${envioStr})\nUbicación: CP ${cliente.cp} - ${cliente.direccion}, ${cliente.localidad}\n\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}`;
-        let urlWhatsAppFinal = `https://wa.me/5492932440521?text=${encodeURIComponent(mensajeWA)}`;
-
-        const variablesTemplate = {
-            to_email: "violetatoconas10@gmail.com",
-            cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
-            cliente_telefono: cliente.telefono,
-            metodo_entrega: detalleEnvioTexto,
-            metodo_pago: document.getElementById("sel-pago").value.toUpperCase(),
-            productos_detalle: listadoHTML,
-            total_productos: sumaUnidades,
-            total_dinero: totalNeto
-        };
-
-        const SERVICE_ID = "service_c0ss7k9"; 
-        const TEMPLATE_ID = "template_392qcwh"; 
-
-        emailjs.send(SERVICE_ID, TEMPLATE_ID, variablesTemplate)
-            .then(function(response) {
-                alert("¡Pedido registrado! (っ•‿•)っ\nAhora te redirigiremos automáticamente a WhatsApp para enviarnos tu pedido y el comprobante.");
-                
-                window.open(urlWhatsAppFinal, '_blank');
-
-                carrito = [];
-                actualizarVisualCarrito();
-                document.getElementById("modal-pago").style.display = "none";
-                document.getElementById("form-datos-cliente").reset();
-                if(btnFinal) {
-                    btnFinal.disabled = false;
-                    btnFinal.innerText = "Aceptar y Enviar Pedido (っˆڡˆς)";
-                }
-            }, function(error) {
-                console.error("Fallo EmailJS:", error);
-                alert("Redirigiendo a WhatsApp para procesar tu compra.");
-                window.open(urlWhatsAppFinal, '_blank');
-                if(btnFinal) {
-                    btnFinal.disabled = false;
-                    btnFinal.innerText = "Aceptar y Enviar Pedido (っˆڡˆς)";
-                }
-            });
+        texto += `\nTotal: $${total}`;
+        
+        window.open(`https://wa.me/5492932440521?text=${encodeURIComponent(texto)}`, '_blank');
     }
-
-    document.getElementById("form-datos-cliente").addEventListener("submit", function(event) {
-        event.preventDefault();
-        guardarDatosCliente();
-    });
-
-    document.getElementById("input-busqueda").value = "";
 
     inicializarTienda();
 </script>
-
 </body>
 </html>
