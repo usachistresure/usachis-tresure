@@ -37,7 +37,7 @@
             font-size: 1.8rem; color: #f07d96; line-height: 1;
         }
 
-        /* BOTÓN SUPERIOR CARRITO CON CONTADOR */
+        /* BOTÓN SUPERIOR CARRITO */
         .btn-carrito-superior {
             position: fixed; top: 15px; right: 15px; z-index: 999999;
             background-color: #ffffff; border: 2px solid #f5d6dc; border-radius: 12px;
@@ -124,6 +124,18 @@
         .total-monto { font-size: 1.6rem; font-weight: bold; color: #f07d96; }
         .btn-checkout { background-color: #f07d96; color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: bold; font-family: 'Times New Roman', Times, serif; width: 100%; font-size: 1.15rem; }
         .btn-checkout:disabled { background-color: #e0e0e0; color: #a0a0a0; }
+
+        /* MODALES */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(77, 61, 64, 0.6); justify-content: center; align-items: center; z-index: 1000000; padding: 10px; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; border: 2px solid #f5d6dc; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 4px; font-weight: bold; color: #4d3d40; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #f5d6dc; border-radius: 8px; font-size: 1rem; font-family: 'Times New Roman', Times, serif; }
+        .box-cotizacion { background: #fff8f9; border: 2px solid #f5d6dc; border-radius: 10px; padding: 12px; margin-top: 8px; }
+        .opcion-envio { display: flex; align-items: center; justify-content: space-between; background: white; padding: 10px; border-radius: 8px; border: 1px solid #f5d6dc; margin-top: 6px; cursor: pointer; }
+        .opcion-envio input { width: auto !important; margin-right: 8px; }
+        .info-pago-box { background: #fff0f2; border-left: 4px solid #f07d96; padding: 12px; margin: 10px 0; font-size: 0.95rem; line-height: 1.5; border-radius: 8px; }
+        .btn-submit { width: 100%; padding: 12px; border-radius: 10px; border: none; color: white; font-weight: bold; font-size: 1.1rem; font-family: 'Times New Roman', Times, serif; cursor: pointer; }
 
         .btn-whatsapp-flotante { position: fixed; bottom: 25px; right: 25px; background-color: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); z-index: 999; text-decoration: none; }
         .btn-whatsapp-flotante svg { width: 35px; height: 35px; fill: white; }
@@ -214,8 +226,80 @@
                 <h3>Total actual:</h3>
                 <div class="total-monto">$<span id="txt-total">0</span></div>
             </div>
-            <button id="btn-comprar" class="btn-checkout" onclick="enviarPedidoWA()" disabled>Enviar pedido por WhatsApp (｡♥‿♥｡)</button>
+            <button id="btn-comprar" class="btn-checkout" onclick="abrirDatosCliente()" disabled>Comprar Ahora (｡♥‿♥｡)</button>
         </div>
+    </div>
+</div>
+
+<!-- MODAL DATOS CLIENTE Y ENVÍO -->
+<div id="modal-datos" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Tus Datos y Envío</h2>
+        <form id="form-datos-cliente">
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" id="inp-nombre" required placeholder="Tu nombre">
+            </div>
+            <div class="form-group">
+                <label>Apellido:</label>
+                <input type="text" id="inp-apellido" required placeholder="Tu apellido">
+            </div>
+            <div class="form-group">
+                <label>DNI:</label>
+                <input type="text" id="inp-dni" required placeholder="Tu número de DNI">
+            </div>
+            <div class="form-group">
+                <label>Email (Gmail):</label>
+                <input type="email" id="inp-email" required placeholder="ejemplo@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Teléfono Celular:</label>
+                <input type="tel" id="inp-telefono" required placeholder="Ej: 2932123456">
+            </div>
+
+            <div class="form-group">
+                <label>Código Postal (CP):</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="inp-cp" placeholder="Ej: 8109 o 4000" maxlength="5" required>
+                    <button type="button" onclick="calcularCotizacionEnvio()" style="background:#ffa6b9; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Cotizar</button>
+                </div>
+                <small style="color:#8c7679; font-style:italic;">Punta Alta: 8109 ($2500)</small>
+            </div>
+
+            <div id="box-opciones-envio" class="box-cotizacion" style="display:none;">
+                <label style="font-weight:bold; color:#4d3d40;">Selecciona la opción de envío:</label>
+                <div id="contenedor-radio-envios"></div>
+            </div>
+
+            <div class="form-group" id="grupo-direccion" style="display:none; margin-top:10px;">
+                <label id="lbl-direccion">Dirección / Sucursal Preferida:</label>
+                <input type="text" id="inp-direccion" placeholder="Ej: Av. Jujuy 123 o Sucursal Centro">
+            </div>
+
+            <div class="form-group" id="grupo-localidad" style="display:none;">
+                <label>Provincia y Localidad:</label>
+                <input type="text" id="inp-localidad" placeholder="Ej: Tucumán, San Miguel de Tucumán">
+            </div>
+
+            <button type="submit" id="btn-continuar-datos" class="btn-submit" style="background-color:#ffa6b9; margin-top:10px;" disabled>Continuar al Pago (っ•‿•)っ</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL MODO PAGO -->
+<div id="modal-pago" class="modal">
+    <div class="modal-content">
+        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Modo de Pago</h2>
+        <p style="margin: 5px 0 15px 0; font-size:1.1rem;">Total a abonar ahora: <b>$<span id="txt-monto-final">0</span></b></p>
+        
+        <div class="info-pago-box">
+            <strong>‹3 Datos para transferir:</strong><br>
+            • Alias: <b>usachis</b><br>
+            • Titular: <b>Violeta Toconas</b> (Banco Nación)<br><br>
+            <i>Una vez hecha la transferencia, tocá el botón de abajo para enviarnos tu pedido y la foto del comprobante por WhatsApp.</i>
+        </div>
+
+        <button id="btn-confirmar-final" class="btn-submit" style="background-color:#f07d96; margin-top:10px;" onclick="enviarPedidoFinal()">Aceptar y Enviar Pedido por WhatsApp (っˆڡˆς)</button>
     </div>
 </div>
 
@@ -269,6 +353,9 @@
     ];
 
     let carrito = [];
+    let cliente = {};
+    let costoEnvioSeleccionado = 0;
+    let tipoEnvioTexto = "";
     let categoriaFiltroActual = "todos";
 
     // SINCRONIZACIÓN EN TIEMPO REAL CON FIREBASE
@@ -384,17 +471,161 @@
         db.ref('inventario').set(inventario);
     }
 
-    function enviarPedidoWA() {
-        let texto = "Hola! Quiero realizar este pedido:\n\n";
-        let total = 0;
-        carrito.forEach(item => {
-            texto += `• ${item.nombre} ($${item.precio})\n`;
-            total += item.precio;
-        });
-        texto += `\nTotal: $${total}`;
-        
-        window.open(`https://wa.me/5492932440521?text=${encodeURIComponent(texto)}`, '_blank');
+    function abrirDatosCliente() {
+        document.getElementById("modal-datos").style.display = "flex";
     }
+
+    function calcularCotizacionEnvio() {
+        const cp = document.getElementById("inp-cp").value.trim();
+        const boxCotizacion = document.getElementById("box-opciones-envio");
+        const contenedorRadio = document.getElementById("contenedor-radio-envios");
+
+        if (!cp || cp.length < 4) {
+            alert("Por favor, ingresá un código postal válido (4 dígitos).");
+            return;
+        }
+
+        const cpNum = parseInt(cp);
+        contenedorRadio.innerHTML = "";
+        boxCotizacion.style.display = "block";
+
+        if (cpNum === 8109) {
+            contenedorRadio.innerHTML = `
+                <label class="opcion-envio">
+                    <div>
+                        <input type="radio" name="rad_envio" value="2500" checked onclick="seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)')">
+                        <strong>Envío a Domicilio en Punta Alta</strong>
+                    </div>
+                    <span style="color:#f07d96; font-weight:bold;">$2.500</span>
+                </label>
+                <label class="opcion-envio">
+                    <div>
+                        <input type="radio" name="rad_envio" value="0" onclick="seleccionarOpcionEnvio(0, 'Punto de Encuentro')">
+                        <strong>Punto de Encuentro (Parque Sarmiento / San Martín / Plaza Belgrano)</strong>
+                    </div>
+                    <span style="color:#25d366; font-weight:bold;">GRATIS</span>
+                </label>
+            `;
+            seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)');
+            return;
+        }
+
+        let precioSucursal = 7995;
+        if ((cpNum >= 1000 && cpNum <= 2000) || (cpNum >= 6000 && cpNum <= 8108)) {
+            precioSucursal = 6995;
+        }
+
+        contenedorRadio.innerHTML = `
+            <label class="opcion-envio">
+                <div>
+                    <input type="radio" name="rad_envio" value="${precioSucursal}" checked onclick="seleccionarOpcionEnvio(${precioSucursal}, 'Correo Argentino - A Sucursal')">
+                    <strong>Correo Argentino (A Sucursal)</strong>
+                </div>
+                <span style="color:#f07d96; font-weight:bold;">$${precioSucursal.toLocaleString('es-AR')}</span>
+            </label>
+        `;
+
+        seleccionarOpcionEnvio(precioSucursal, 'Correo Argentino - A Sucursal');
+    }
+
+    function seleccionarOpcionEnvio(monto, nombreMetodo) {
+        costoEnvioSeleccionado = monto;
+        tipoEnvioTexto = nombreMetodo;
+
+        const divDir = document.getElementById("grupo-direccion");
+        const divLoc = document.getElementById("grupo-localidad");
+        const lblDir = document.getElementById("lbl-direccion");
+        const btnContinuar = document.getElementById("btn-continuar-datos");
+
+        divDir.style.display = "block";
+        divLoc.style.display = "block";
+
+        if (nombreMetodo.includes("Sucursal")) {
+            lblDir.innerText = "Sucursal de Correo Preferida / Nombre Sucursal:";
+            document.getElementById("inp-direccion").placeholder = "Ej: Sucursal Centro Correo Argentino";
+        } else if (nombreMetodo.includes("Encuentro")) {
+            divDir.style.display = "none";
+            divLoc.style.display = "none";
+        } else {
+            lblDir.innerText = "Dirección Completa (Calle y Nro):";
+            document.getElementById("inp-direccion").placeholder = "Ej: Av. Jujuy 123";
+        }
+
+        btnContinuar.disabled = false;
+    }
+
+    function guardarDatosCliente() {
+        cliente = {
+            nombre: document.getElementById("inp-nombre").value,
+            apellido: document.getElementById("inp-apellido").value,
+            dni: document.getElementById("inp-dni").value,
+            email: document.getElementById("inp-email").value,
+            telefono: document.getElementById("inp-telefono").value,
+            cp: document.getElementById("inp-cp").value,
+            metodoEnvio: tipoEnvioTexto,
+            costoEnvio: costoEnvioSeleccionado,
+            direccion: document.getElementById("inp-direccion").value || "Punto de encuentro",
+            localidad: document.getElementById("inp-localidad").value || "Punta Alta"
+        };
+
+        let sumaProductos = 0;
+        carrito.forEach(i => sumaProductos += i.precio);
+        const totalNeto = sumaProductos + cliente.costoEnvio;
+
+        document.getElementById("txt-monto-final").innerText = totalNeto.toLocaleString('es-AR');
+        document.getElementById("modal-datos").style.display = "none";
+        document.getElementById("modal-pago").style.display = "flex";
+    }
+
+    function enviarPedidoFinal() {
+        let sumaProductos = 0;
+        let textoWhatsAppProductos = "";
+        let listadoHTML = "<ul style='padding-left: 20px; line-height: 1.6;'>";
+
+        carrito.forEach(item => {
+            textoWhatsAppProductos += `• ${item.nombre} ($${item.precio})\n`;
+            listadoHTML += `<li><strong>${item.nombre}</strong> — $${item.precio}</li>`;
+            sumaProductos += item.precio;
+        });
+        listadoHTML += "</ul>";
+
+        const totalNeto = sumaProductos + cliente.costoEnvio;
+        let envioStr = cliente.costoEnvio > 0 ? `$${cliente.costoEnvio.toLocaleString('es-AR')}` : 'Punto de encuentro (Gratis)';
+
+        let mensajeWA = `Hola! Realicé el siguiente pedido:\n\n${textoWhatsAppProductos}\n-------------------------\n🚚 Envío / Entrega: ${cliente.metodoEnvio} (${envioStr})\n📍 Ubicación: CP ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}\n\n💰 Total a abonar: $${totalNeto.toLocaleString('es-AR')}\n\n👤 Mis Datos:\n• Nombre: ${cliente.nombre} ${cliente.apellido}\n• DNI: ${cliente.dni}\n• Email: ${cliente.email}\n• Tel: ${cliente.telefono}`;
+        let urlWhatsAppFinal = `https://wa.me/5492932440521?text=${encodeURIComponent(mensajeWA)}`;
+
+        const variablesTemplate = {
+            to_email: "violetatoconas10@gmail.com",
+            cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
+            cliente_telefono: cliente.telefono,
+            metodo_entrega: `${cliente.metodoEnvio} (${envioStr}) - CP: ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}`,
+            metodo_pago: "TRANSFERENCIA BANCARIA",
+            productos_detalle: listadoHTML,
+            total_productos: carrito.length,
+            total_dinero: totalNeto
+        };
+
+        emailjs.send("service_c0ss7k9", "template_392qcwh", variablesTemplate)
+            .then(() => {
+                window.open(urlWhatsAppFinal, '_blank');
+                carrito = [];
+                actualizarVisualCarrito();
+                document.getElementById("modal-pago").style.display = "none";
+                document.getElementById("form-datos-cliente").reset();
+            }, () => {
+                window.open(urlWhatsAppFinal, '_blank');
+                carrito = [];
+                actualizarVisualCarrito();
+                document.getElementById("modal-pago").style.display = "none";
+                document.getElementById("form-datos-cliente").reset();
+            });
+    }
+
+    document.getElementById("form-datos-cliente").addEventListener("submit", function(e) {
+        e.preventDefault();
+        guardarDatosCliente();
+    });
 
     inicializarTienda();
 </script>
