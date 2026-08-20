@@ -356,7 +356,7 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
-            max-width: 460px;
+            max-width: 480px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -382,7 +382,7 @@
             background: #fff8f9;
             border: 2px solid #f5d6dc;
             border-radius: 10px;
-            padding: 10px;
+            padding: 12px;
             margin-top: 8px;
         }
         .opcion-envio {
@@ -390,7 +390,7 @@
             align-items: center;
             justify-content: space-between;
             background: white;
-            padding: 8px 12px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid #f5d6dc;
             margin-top: 6px;
@@ -399,6 +399,21 @@
         .opcion-envio input {
             width: auto !important;
             margin-right: 8px;
+        }
+        .tabla-referencia-envios {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+        .tabla-referencia-envios th, .tabla-referencia-envios td {
+            border: 1px solid #f5d6dc;
+            padding: 6px;
+            text-align: left;
+        }
+        .tabla-referencia-envios th {
+            background-color: #fff0f2;
+            color: #f07d96;
         }
         .info-pago-box {
             background: #f0f7ff;
@@ -518,7 +533,7 @@
     </div>
 </div>
 
-<!-- MODAL DATOS CLIENTE + COTIZADOR DE ENVÍOS -->
+<!-- MODAL DATOS CLIENTE Y ENVÍOS -->
 <div id="modal-datos" class="modal">
     <div class="modal-content">
         <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Tus Datos y Envío</h2>
@@ -536,11 +551,11 @@
                 <input type="tel" id="inp-telefono" required placeholder="Ej: 1123456789">
             </div>
 
-            <!-- SECCIÓN DE CÓDIGO POSTAL Y COTIZACIÓN -->
+            <!-- SECCIÓN DE CÓDIGO POSTAL Y SELECCIÓN DE ENVÍO -->
             <div class="form-group">
                 <label>Código Postal (CP):</label>
                 <div style="display:flex; gap:8px;">
-                    <input type="text" id="inp-cp" placeholder="Ej: 8109 o 1425" maxlength="5" required>
+                    <input type="text" id="inp-cp" placeholder="Ej: 8109 o 4000" maxlength="5" required>
                     <button type="button" onclick="calcularCotizacionEnvio()" style="background:#ffa6b9; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Cotizar</button>
                 </div>
                 <small style="color:#8c7679; font-style:italic;">Punta Alta: 8109 ($2500)</small>
@@ -549,20 +564,56 @@
             <div id="box-opciones-envio" class="box-cotizacion" style="display:none;">
                 <label style="font-weight:bold; color:#4d3d40;">Selecciona la opción de envío:</label>
                 <div id="contenedor-radio-envios"></div>
+
+                <!-- TABLA REFERENCIAL DE COSTOS APROXIMADOS -->
+                <div style="margin-top:12px; border-top:1px dashed #f5d6dc; padding-top:8px;">
+                    <small style="font-weight:bold; color:#f07d96;">Tabla referencial de envíos (Aproximados):</small>
+                    <table class="tabla-referencia-envios">
+                        <thead>
+                            <tr>
+                                <th>Destino</th>
+                                <th>Sucursal</th>
+                                <th>Domicilio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><b>Punta Alta (Local)</b></td>
+                                <td>-</td>
+                                <td>$2.500 (o Gratis)</td>
+                            </tr>
+                            <tr>
+                                <td><b>Bs. As. / CABA / La Pampa</b></td>
+                                <td>$6.995</td>
+                                <td>Consultar por Privado</td>
+                            </tr>
+                            <tr>
+                                <td><b>Norte (Jujuy, Salta, Tucumán, etc.)</b></td>
+                                <td>$7.995</td>
+                                <td>Consultar por Privado</td>
+                            </tr>
+                            <tr>
+                                <td><b>Sur / Patagonia</b></td>
+                                <td>$7.995</td>
+                                <td>Consultar por Privado</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- CAMPOS DINÁMICOS DE DIRECCIÓN / SUCURSAL -->
             <div class="form-group" id="grupo-direccion" style="display:none; margin-top:10px;">
-                <label id="lbl-direccion">Dirección Completa (Calle, Nro, Piso/Dpto):</label>
-                <input type="text" id="inp-direccion" placeholder="Ej: Av. Jujuy 123">
+                <label id="lbl-direccion">Dirección / Sucursal Preferida:</label>
+                <input type="text" id="inp-direccion" placeholder="Ej: Av. Jujuy 123 o Sucursal Centro">
             </div>
 
             <div class="form-group" id="grupo-localidad" style="display:none;">
                 <label>Localidad y Provincia:</label>
-                <input type="text" id="inp-localidad" placeholder="Ej: Punta Alta, Buenos Aires">
+                <input type="text" id="inp-localidad" placeholder="Ej: San Miguel de Tucumán, Tucumán">
             </div>
 
-            <button type="submit" id="btn-continuar-datos" class="btn-submit" style="background-color:#ffa6b9; margin-top:10px;" disabled>Calcular envío para continuar (っ•‿•)っ</button>
+            <button type="submit" id="btn-continuar-datos" class="btn-submit" style="background-color:#ffa6b9; margin-top:10px;" disabled>Continuar al Pago (っ•‿•)っ</button>
         </form>
     </div>
 </div>
@@ -571,8 +622,9 @@
 <div id="modal-pago" class="modal">
     <div class="modal-content">
         <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Modo de Pago</h2>
-        <p style="margin: 5px 0 15px 0; font-size:1.1rem;">Total final a pagar: <b>$<span id="txt-monto-final">0</span></b></p>
-        
+        <p style="margin: 5px 0 15px 0; font-size:1.1rem;">Total a abonar ahora: <b>$<span id="txt-monto-final">0</span></b></p>
+        <p id="txt-aviso-domicilio" style="color:#d9534f; font-size:0.9rem; display:none;"><i>* Para envíos a domicilio con Correo Argentino, el costo final del envío se cotizará y acordará por privado.</i></p>
+
         <div class="form-group">
             <label>Medio de pago disponible:</label>
             <select id="sel-pago">
@@ -917,12 +969,11 @@
         document.getElementById("modal-datos").style.display = "flex";
     }
 
-    // LÓGICA DE COTIZACIÓN AUTOMÁTICA DE ENVÍOS SEGÚN CÓDIGO POSTAL
+    // COTIZACIÓN EXCLUSIVA A SUCURSAL Y CONSULTA AL PRIVADO PARA DOMICILIO
     function calcularCotizacionEnvio() {
         const cp = document.getElementById("inp-cp").value.trim();
         const boxCotizacion = document.getElementById("box-opciones-envio");
         const contenedorRadio = document.getElementById("contenedor-radio-envios");
-        const btnContinuar = document.getElementById("btn-continuar-datos");
 
         if (!cp || cp.length < 4) {
             alert("Por favor, ingresá un código postal válido (4 dígitos).");
@@ -933,19 +984,19 @@
         contenedorRadio.innerHTML = "";
         boxCotizacion.style.display = "block";
 
-        // CASO 1: LOCAL EN PUNTA ALTA (CP 8109)
+        // CASO LOCAL (PUNTA ALTA - CP 8109)
         if (cpNum === 8109) {
             contenedorRadio.innerHTML = `
                 <label class="opcion-envio">
                     <div>
-                        <input type="radio" name="rad_envio" value="2500" data-nombre="Envío Local (Punta Alta)" checked onclick="seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)')">
+                        <input type="radio" name="rad_envio" value="2500" checked onclick="seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)')">
                         <strong>Envío a Domicilio en Punta Alta</strong>
                     </div>
                     <span style="color:#f07d96; font-weight:bold;">$2.500</span>
                 </label>
                 <label class="opcion-envio">
                     <div>
-                        <input type="radio" name="rad_envio" value="0" data-nombre="Punto de encuentro" onclick="seleccionarOpcionEnvio(0, 'Punto de Encuentro')">
+                        <input type="radio" name="rad_envio" value="0" onclick="seleccionarOpcionEnvio(0, 'Punto de Encuentro')">
                         <strong>Punto de Encuentro (A convenir)</strong>
                     </div>
                     <span style="color:#25d366; font-weight:bold;">GRATIS</span>
@@ -955,38 +1006,28 @@
             return;
         }
 
-        // CASO 2: NACIONAL POR CORREO ARGENTINO (TARIFAS POR REGIONES)
-        let precioSucursal = 5800;
-        let precioDomicilio = 7900;
+        // CASO NACIONAL: SUCURSAL COTIZADA / DOMICILIO CONSULTAR POR PRIVADO
+        let precioSucursal = 7995; // Tarifa nacional (Norte / Sur)
 
-        if (cpNum >= 1000 && cpNum <= 1999) {
-            // CABA y Gran Buenos Aires
-            precioSucursal = 5200;
-            precioDomicilio = 7100;
-        } else if (cpNum >= 2000 && cpNum <= 8108) {
-            // Prov. Buenos Aires, Santa Fe, Córdoba, La Pampa
-            precioSucursal = 5500;
-            precioDomicilio = 7500;
-        } else if (cpNum >= 8110 && cpNum <= 9420) {
-            // Patagonia y Sur de Argentina
-            precioSucursal = 6400;
-            precioDomicilio = 8600;
+        // Tarifa regional cercana (Buenos Aires, CABA, La Pampa)
+        if ((cpNum >= 1000 && cpNum <= 2000) || (cpNum >= 6000 && cpNum <= 8108) || (cpNum >= 8110 && cpNum <= 8300)) {
+            precioSucursal = 6995;
         }
 
         contenedorRadio.innerHTML = `
             <label class="opcion-envio">
                 <div>
-                    <input type="radio" name="rad_envio" value="${precioSucursal}" data-tipo="sucursal" data-nombre="Correo Argentino (Sucursal)" checked onclick="seleccionarOpcionEnvio(${precioSucursal}, 'Correo Argentino - A Sucursal')">
+                    <input type="radio" name="rad_envio" value="${precioSucursal}" checked onclick="seleccionarOpcionEnvio(${precioSucursal}, 'Correo Argentino - A Sucursal')">
                     <strong>Correo Argentino (A Sucursal)</strong>
                 </div>
-                <span style="color:#f07d96; font-weight:bold;">$${precioSucursal}</span>
+                <span style="color:#f07d96; font-weight:bold;">$${precioSucursal.toLocaleString('es-AR')}</span>
             </label>
             <label class="opcion-envio">
                 <div>
-                    <input type="radio" name="rad_envio" value="${precioDomicilio}" data-tipo="domicilio" data-nombre="Correo Argentino (Domicilio)" onclick="seleccionarOpcionEnvio(${precioDomicilio}, 'Correo Argentino - A Domicilio')">
+                    <input type="radio" name="rad_envio" value="0" onclick="seleccionarOpcionEnvio(0, 'Correo Argentino - A Domicilio (Consultar al privado)')">
                     <strong>Correo Argentino (A Domicilio)</strong>
                 </div>
-                <span style="color:#f07d96; font-weight:bold;">$${precioDomicilio}</span>
+                <span style="color:#8c7679; font-weight:bold; font-size:0.85rem;">Consultar al privado</span>
             </label>
         `;
 
@@ -1006,7 +1047,7 @@
         divLoc.style.display = "block";
 
         if (nombreMetodo.includes("Sucursal")) {
-            lblDir.innerText = "Nombre de la Sucursal de Correo o Preferencia:";
+            lblDir.innerText = "Sucursal de Correo Preferida:";
             document.getElementById("inp-direccion").placeholder = "Ej: Sucursal Centro Correo Argentino";
         } else if (nombreMetodo.includes("Encuentro")) {
             divDir.style.display = "none";
@@ -1017,7 +1058,6 @@
         }
 
         btnContinuar.disabled = false;
-        btnContinuar.innerText = "Continuar al Pago (っ•‿•)っ";
     }
 
     function guardarDatosCliente() {
@@ -1036,6 +1076,14 @@
         const totalNeto = sumaDinero + cliente.costoEnvio;
         
         document.getElementById("txt-monto-final").innerText = totalNeto.toLocaleString('es-AR');
+        
+        const avisoDomicilio = document.getElementById("txt-aviso-domicilio");
+        if (cliente.metodoEnvio.includes("Consultar al privado")) {
+            avisoDomicilio.style.display = "block";
+        } else {
+            avisoDomicilio.style.display = "none";
+        }
+
         document.getElementById("modal-datos").style.display = "none";
         document.getElementById("modal-pago").style.display = "flex";
     }
@@ -1059,9 +1107,10 @@
         });
         listadoHTML += "</ul>";
 
-        let detalleEnvioTexto = `${cliente.metodoEnvio} ($${cliente.costoEnvio})\n📍 CP: ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}`;
+        let envioStr = cliente.costoEnvio > 0 ? `$${cliente.costoEnvio.toLocaleString('es-AR')}` : 'A convenir / Consultar';
+        let detalleEnvioTexto = `${cliente.metodoEnvio} (${envioStr})\n📍 CP: ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}`;
 
-        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nEnvío: ${cliente.metodoEnvio} ($${cliente.costoEnvio})\nUbicación: CP ${cliente.cp} - ${cliente.direccion}, ${cliente.localidad}\n\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}`;
+        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nEnvío: ${cliente.metodoEnvio} (${envioStr})\nUbicación: CP ${cliente.cp} - ${cliente.direccion}, ${cliente.localidad}\n\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}`;
         let urlWhatsAppFinal = `https://wa.me/5492932440521?text=${encodeURIComponent(mensajeWA)}`;
 
         const variablesTemplate = {
