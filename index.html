@@ -356,8 +356,10 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
-            max-width: 440px;
+            max-width: 460px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             border: 2px solid #f5d6dc;
         }
         .form-group {
@@ -375,6 +377,28 @@
             border-radius: 8px;
             font-size: 1rem;
             font-family: 'Times New Roman', Times, serif;
+        }
+        .box-cotizacion {
+            background: #fff8f9;
+            border: 2px solid #f5d6dc;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+        }
+        .opcion-envio {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #f5d6dc;
+            margin-top: 6px;
+            cursor: pointer;
+        }
+        .opcion-envio input {
+            width: auto !important;
+            margin-right: 8px;
         }
         .info-pago-box {
             background: #f0f7ff;
@@ -433,7 +457,7 @@
 </head>
 <body>
 
-<!-- BOTÓN FLOTANTE DE CONSULTAS EN GENERAL POR WHATSAPP -->
+<!-- BOTÓN FLOTANTE PARA DUDAS GENERALES -->
 <a href="https://wa.me/5492932440521?text=Hola!%20Tengo%20una%20duda%20sobre%20un%20pedido%20de%20la%20tienda" class="btn-whatsapp-flotante" target="_blank" title="¿Tenes alguna duda? ¡Escribinos!">
     <svg viewBox="0 0 24 24">
         <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.516 2.266 2.27 3.51 5.284 3.508 8.492-.004 6.66-5.34 11.997-11.953 11.997-2.005-.001-3.973-.503-5.714-1.458L0 24zm6.59-4.846c1.66.986 3.298 1.448 5.355 1.449 5.546 0 10.058-4.478 10.062-9.966.002-2.659-1.03-5.159-2.906-7.038-1.876-1.88-4.373-2.914-7.031-2.915-5.553 0-10.065 4.48-10.069 9.968-.001 2.15.57 4.148 1.651 5.867l-1.08 3.944 4.018-1.043z"/>
@@ -494,10 +518,10 @@
     </div>
 </div>
 
-<!-- MODAL DATOS CLIENTE -->
+<!-- MODAL DATOS CLIENTE + COTIZADOR DE ENVÍOS -->
 <div id="modal-datos" class="modal">
     <div class="modal-content">
-        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Tus Datos</h2>
+        <h2 style="margin-top:0; color:#4d3d40; border-bottom:2px solid #f5d6dc; padding-bottom:6px;">‹3 Tus Datos y Envío</h2>
         <form id="form-datos-cliente">
             <div class="form-group">
                 <label>Nombre:</label>
@@ -511,18 +535,34 @@
                 <label>Teléfono Celular:</label>
                 <input type="tel" id="inp-telefono" required placeholder="Ej: 1123456789">
             </div>
+
+            <!-- SECCIÓN DE CÓDIGO POSTAL Y COTIZACIÓN -->
             <div class="form-group">
-                <label>Método de Entrega:</label>
-                <select id="sel-entrega" onchange="alternarEnvioOpcion()">
-                    <option value="encuentro">Punto de encuentro (A convenir)</option>
-                    <option value="envio">Envío a domicilio (Recargo de $2500)</option>
-                </select>
+                <label>Código Postal (CP):</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="inp-cp" placeholder="Ej: 8109 o 1425" maxlength="5" required>
+                    <button type="button" onclick="calcularCotizacionEnvio()" style="background:#ffa6b9; color:white; border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer;">Cotizar</button>
+                </div>
+                <small style="color:#8c7679; font-style:italic;">Punta Alta: 8109 ($2500)</small>
             </div>
-            <div class="form-group" id="grupo-direccion" style="display:none;">
-                <label>Dirección Completa:</label>
-                <input type="text" id="inp-direccion" placeholder="Calle, Número, Localidad">
+
+            <div id="box-opciones-envio" class="box-cotizacion" style="display:none;">
+                <label style="font-weight:bold; color:#4d3d40;">Selecciona la opción de envío:</label>
+                <div id="contenedor-radio-envios"></div>
             </div>
-            <button type="submit" class="btn-submit" style="background-color:#ffa6b9;">Continuar (っ•‿•)っ</button>
+
+            <!-- CAMPOS DINÁMICOS DE DIRECCIÓN / SUCURSAL -->
+            <div class="form-group" id="grupo-direccion" style="display:none; margin-top:10px;">
+                <label id="lbl-direccion">Dirección Completa (Calle, Nro, Piso/Dpto):</label>
+                <input type="text" id="inp-direccion" placeholder="Ej: Av. Jujuy 123">
+            </div>
+
+            <div class="form-group" id="grupo-localidad" style="display:none;">
+                <label>Localidad y Provincia:</label>
+                <input type="text" id="inp-localidad" placeholder="Ej: Punta Alta, Buenos Aires">
+            </div>
+
+            <button type="submit" id="btn-continuar-datos" class="btn-submit" style="background-color:#ffa6b9; margin-top:10px;" disabled>Calcular envío para continuar (っ•‿•)っ</button>
         </form>
     </div>
 </div>
@@ -534,15 +574,18 @@
         <p style="margin: 5px 0 15px 0; font-size:1.1rem;">Total final a pagar: <b>$<span id="txt-monto-final">0</span></b></p>
         
         <div class="form-group">
-            <label>Selecciona cómo deseas abonar:</label>
-            <select id="sel-pago" onchange="alternarInfoPago()">
-                <option value="">-- Elige una opción --</option>
-                <option value="mercadopago">Mercado Pago (Transferencia / Link)</option>
-                <option value="efectivo">Efectivo (Con 50% de seña previa)</option>
+            <label>Medio de pago disponible:</label>
+            <select id="sel-pago">
+                <option value="mercadopago">Mercado Pago (Envío a Alias / Banco Nación)</option>
             </select>
         </div>
 
-        <div id="caja-info-pago" class="info-pago-box" style="display:none;"></div>
+        <div class="info-pago-box">
+            <strong>‹3 Datos para transferir desde Mercado Pago:</strong><br>
+            • Alias: <b>usachis</b><br>
+            • Titular: <b>Violeta Toconas</b> (Banco Nación)<br><br>
+            <i>Copia el alias de arriba y realiza tu transferencia desde la App de Mercado Pago. Al terminar, presioná el botón rosa de abajo para enviarnos tu pedido por WhatsApp con el comprobante.</i>
+        </div>
 
         <button id="btn-confirmar-final" class="btn-submit" style="background-color:#f07d96; margin-top:10px;" onclick="enviarPedidoFinal()">Aceptar y Enviar Pedido (っˆڡˆς)</button>
     </div>
@@ -610,6 +653,8 @@
 
     let carrito = [];
     let cliente = {};
+    let costoEnvioSeleccionado = 0;
+    let tipoEnvioTexto = "";
 
     function inicializarTienda() {
         const contenedor = document.getElementById("contenedor-productos");
@@ -872,21 +917,107 @@
         document.getElementById("modal-datos").style.display = "flex";
     }
 
-    function alternarEnvioOpcion() {
-        const metodo = document.getElementById("sel-entrega").value;
-        const divDir = document.getElementById("grupo-direccion");
-        const inpDir = document.getElementById("inp-direccion");
+    // LÓGICA DE COTIZACIÓN AUTOMÁTICA DE ENVÍOS SEGÚN CÓDIGO POSTAL
+    function calcularCotizacionEnvio() {
+        const cp = document.getElementById("inp-cp").value.trim();
+        const boxCotizacion = document.getElementById("box-opciones-envio");
+        const contenedorRadio = document.getElementById("contenedor-radio-envios");
+        const btnContinuar = document.getElementById("btn-continuar-datos");
 
-        if (metodo === "envio") {
-            divDir.style.display = "block";
-            if(inpDir) inpDir.required = true;
-        } else {
-            divDir.style.display = "none";
-            if(inpDir) {
-                inpDir.required = false;
-                inpDir.value = "";
-            }
+        if (!cp || cp.length < 4) {
+            alert("Por favor, ingresá un código postal válido (4 dígitos).");
+            return;
         }
+
+        const cpNum = parseInt(cp);
+        contenedorRadio.innerHTML = "";
+        boxCotizacion.style.display = "block";
+
+        // CASO 1: LOCAL EN PUNTA ALTA (CP 8109)
+        if (cpNum === 8109) {
+            contenedorRadio.innerHTML = `
+                <label class="opcion-envio">
+                    <div>
+                        <input type="radio" name="rad_envio" value="2500" data-nombre="Envío Local (Punta Alta)" checked onclick="seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)')">
+                        <strong>Envío a Domicilio en Punta Alta</strong>
+                    </div>
+                    <span style="color:#f07d96; font-weight:bold;">$2.500</span>
+                </label>
+                <label class="opcion-envio">
+                    <div>
+                        <input type="radio" name="rad_envio" value="0" data-nombre="Punto de encuentro" onclick="seleccionarOpcionEnvio(0, 'Punto de Encuentro')">
+                        <strong>Punto de Encuentro (A convenir)</strong>
+                    </div>
+                    <span style="color:#25d366; font-weight:bold;">GRATIS</span>
+                </label>
+            `;
+            seleccionarOpcionEnvio(2500, 'Envío Local (Punta Alta)');
+            return;
+        }
+
+        // CASO 2: NACIONAL POR CORREO ARGENTINO (TARIFAS POR REGIONES)
+        let precioSucursal = 5800;
+        let precioDomicilio = 7900;
+
+        if (cpNum >= 1000 && cpNum <= 1999) {
+            // CABA y Gran Buenos Aires
+            precioSucursal = 5200;
+            precioDomicilio = 7100;
+        } else if (cpNum >= 2000 && cpNum <= 8108) {
+            // Prov. Buenos Aires, Santa Fe, Córdoba, La Pampa
+            precioSucursal = 5500;
+            precioDomicilio = 7500;
+        } else if (cpNum >= 8110 && cpNum <= 9420) {
+            // Patagonia y Sur de Argentina
+            precioSucursal = 6400;
+            precioDomicilio = 8600;
+        }
+
+        contenedorRadio.innerHTML = `
+            <label class="opcion-envio">
+                <div>
+                    <input type="radio" name="rad_envio" value="${precioSucursal}" data-tipo="sucursal" data-nombre="Correo Argentino (Sucursal)" checked onclick="seleccionarOpcionEnvio(${precioSucursal}, 'Correo Argentino - A Sucursal')">
+                    <strong>Correo Argentino (A Sucursal)</strong>
+                </div>
+                <span style="color:#f07d96; font-weight:bold;">$${precioSucursal}</span>
+            </label>
+            <label class="opcion-envio">
+                <div>
+                    <input type="radio" name="rad_envio" value="${precioDomicilio}" data-tipo="domicilio" data-nombre="Correo Argentino (Domicilio)" onclick="seleccionarOpcionEnvio(${precioDomicilio}, 'Correo Argentino - A Domicilio')">
+                    <strong>Correo Argentino (A Domicilio)</strong>
+                </div>
+                <span style="color:#f07d96; font-weight:bold;">$${precioDomicilio}</span>
+            </label>
+        `;
+
+        seleccionarOpcionEnvio(precioSucursal, 'Correo Argentino - A Sucursal');
+    }
+
+    function seleccionarOpcionEnvio(monto, nombreMetodo) {
+        costoEnvioSeleccionado = monto;
+        tipoEnvioTexto = nombreMetodo;
+
+        const divDir = document.getElementById("grupo-direccion");
+        const divLoc = document.getElementById("grupo-localidad");
+        const lblDir = document.getElementById("lbl-direccion");
+        const btnContinuar = document.getElementById("btn-continuar-datos");
+
+        divDir.style.display = "block";
+        divLoc.style.display = "block";
+
+        if (nombreMetodo.includes("Sucursal")) {
+            lblDir.innerText = "Nombre de la Sucursal de Correo o Preferencia:";
+            document.getElementById("inp-direccion").placeholder = "Ej: Sucursal Centro Correo Argentino";
+        } else if (nombreMetodo.includes("Encuentro")) {
+            divDir.style.display = "none";
+            divLoc.style.display = "none";
+        } else {
+            lblDir.innerText = "Dirección Completa (Calle, Nro, Piso/Dpto):";
+            document.getElementById("inp-direccion").placeholder = "Ej: Av. Jujuy 123";
+        }
+
+        btnContinuar.disabled = false;
+        btnContinuar.innerText = "Continuar al Pago (っ•‿•)っ";
     }
 
     function guardarDatosCliente() {
@@ -894,57 +1025,22 @@
             nombre: document.getElementById("inp-nombre").value,
             apellido: document.getElementById("inp-apellido").value,
             telefono: document.getElementById("inp-telefono").value,
-            entrega: document.getElementById("sel-entrega").value,
-            direccion: document.getElementById("inp-direccion").value || "Punto de encuentro"
+            cp: document.getElementById("inp-cp").value,
+            metodoEnvio: tipoEnvioTexto,
+            costoEnvio: costoEnvioSeleccionado,
+            direccion: document.getElementById("inp-direccion").value || "Punto de encuentro",
+            localidad: document.getElementById("inp-localidad").value || "Punta Alta"
         };
 
         const { sumaDinero } = obtenerTotales();
-        const recargoEnvio = cliente.entrega === "envio" ? 2500 : 0;
+        const totalNeto = sumaDinero + cliente.costoEnvio;
         
-        document.getElementById("txt-monto-final").innerText = sumaDinero + recargoEnvio;
+        document.getElementById("txt-monto-final").innerText = totalNeto.toLocaleString('es-AR');
         document.getElementById("modal-datos").style.display = "none";
         document.getElementById("modal-pago").style.display = "flex";
     }
 
-    function alternarInfoPago() {
-        const metodoPago = document.getElementById("sel-pago").value;
-        const cajaInfo = document.getElementById("caja-info-pago");
-        
-        if (!metodoPago) {
-            cajaInfo.style.display = "none";
-            return;
-        }
-        
-        cajaInfo.style.display = "block";
-        
-        if (metodoPago === "mercadopago") {
-            cajaInfo.innerHTML = `
-                <strong>‹3 Checkout de Mercado Pago:</strong><br>
-                Podés abonar enviando dinero directo al Alias de la tienda o usando el link de pago oficial.<br><br>
-                <b>Datos de Cuenta:</b><br>
-                • Alias MP: <b>usachis</b><br>
-                • A nombre de: <b>Violeta Toconas</b><br><br>
-                <a href="https://link.mercadopago.com.ar/TU_LINK_DE_PAGO_AQUI" target="_blank" style="display:inline-block; background-color:#009ee3; color:white; padding:8px 15px; border-radius:8px; font-weight:bold; text-decoration:none; margin-top:5px; text-align:center; width:100%;">Pagar con Link de Mercado Pago 💳</a>
-            `;
-        } else if (metodoPago === "efectivo") {
-            cajaInfo.innerHTML = `
-                <strong>‹3 Aviso de Reserva Importante:</strong><br>
-                En caso de pagar con efectivo deberás abonar al menos el <b>50%</b> del valor total mediante transferencia bancaria.<br><br>
-                <b>Datos de Cuenta (Mercado Pago):</b><br>
-                • Alias: <b>usachis</b><br>
-                • A nombre de: <b>Violeta Toconas</b><br><br>
-                Una vez hecho el depósito de la seña, el sistema te redirigirá a WhatsApp para pasar el comprobante.
-            `;
-        }
-    }
-
     function enviarPedidoFinal() {
-        const pago = document.getElementById("sel-pago").value;
-        if (!pago) {
-            alert("Por favor, selecciona un modo de pago.");
-            return;
-        }
-
         const btnFinal = document.getElementById("btn-confirmar-final");
         if(btnFinal) {
             btnFinal.disabled = true;
@@ -952,12 +1048,9 @@
         }
 
         const { sumaDinero, sumaUnidades } = obtenerTotales();
-        const recargoEnvio = cliente.entrega === "envio" ? 2500 : 0;
-        const totalNeto = sumaDinero + recargoEnvio;
+        const totalNeto = sumaDinero + cliente.costoEnvio;
 
-        // 1. ARMAR EL LISTADO HTML PARA EMAILJS
         let listadoHTML = "<ul style='padding-left: 20px; line-height: 1.6;'>";
-        // 2. ARMAR EL TEXTO EN BULLETS LIMPIO PARA WHATSAPP
         let textoWhatsAppProductos = "";
         
         carrito.forEach(item => {
@@ -966,18 +1059,17 @@
         });
         listadoHTML += "</ul>";
 
-        // CONFIGURACIÓN DINÁMICA DEL MENSAJE DE WHATSAPP SOLICITADO
-        let modoPagoTexto = pago === "mercadopago" ? "Mercado Pago" : "Efectivo (Seña 50%)";
-        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}\nEntrega: ${cliente.entrega === "envio" ? "Envío a domicilio" : "Punto de encuentro"}\nMétodo de pago elegido: ${modoPagoTexto}`;
-        
+        let detalleEnvioTexto = `${cliente.metodoEnvio} ($${cliente.costoEnvio})\n📍 CP: ${cliente.cp} | ${cliente.direccion}, ${cliente.localidad}`;
+
+        let mensajeWA = `Hola, realice este pedido:\n\n${textoWhatsAppProductos}\nEnvío: ${cliente.metodoEnvio} ($${cliente.costoEnvio})\nUbicación: CP ${cliente.cp} - ${cliente.direccion}, ${cliente.localidad}\n\nTotal: $${totalNeto.toLocaleString('es-AR')}\n\nMi nombre es: ${cliente.nombre} ${cliente.apellido}`;
         let urlWhatsAppFinal = `https://wa.me/5492932440521?text=${encodeURIComponent(mensajeWA)}`;
 
         const variablesTemplate = {
             to_email: "violetatoconas10@gmail.com",
             cliente_nombre: `${cliente.nombre} ${cliente.apellido}`,
             cliente_telefono: cliente.telefono,
-            metodo_entrega: cliente.entrega === "envio" ? `Envío a domicilio a: ${cliente.direccion}` : "Punto de encuentro",
-            metodo_pago: pago === "mercadopago" ? "MERCADO PAGO" : "EFECTIVO",
+            metodo_entrega: detalleEnvioTexto,
+            metodo_pago: "MERCADO PAGO (ALIAS)",
             productos_detalle: listadoHTML,
             total_productos: sumaUnidades,
             total_dinero: totalNeto
@@ -988,23 +1080,21 @@
 
         emailjs.send(SERVICE_ID, TEMPLATE_ID, variablesTemplate)
             .then(function(response) {
-                alert("¡Pedido registrado! (っ•‿•)っ\nAhora te redirigiremos a WhatsApp para finalizar tu pago o enviarnos el comprobante.");
+                alert("¡Pedido registrado! (っ•‿•)っ\nAhora te redirigiremos automáticamente a WhatsApp para enviarnos tu pedido y el comprobante.");
                 
-                // REDIRECCIÓN AUTOMÁTICA A WHATSAPP CON EL MENSAJE DINÁMICO
                 window.open(urlWhatsAppFinal, '_blank');
 
                 carrito = [];
                 actualizarVisualCarrito();
                 document.getElementById("modal-pago").style.display = "none";
                 document.getElementById("form-datos-cliente").reset();
-                document.getElementById("sel-pago").value = "";
                 if(btnFinal) {
                     btnFinal.disabled = false;
                     btnFinal.innerText = "Aceptar y Enviar Pedido (っˆڡˆς)";
                 }
             }, function(error) {
                 console.error("Fallo EmailJS:", error);
-                alert("Hubo un error de conexión al guardar el pedido. Redirigiendo a WhatsApp de todas formas para que no pierdas tu compra.");
+                alert("Redirigiendo a WhatsApp para procesar tu compra.");
                 window.open(urlWhatsAppFinal, '_blank');
                 if(btnFinal) {
                     btnFinal.disabled = false;
