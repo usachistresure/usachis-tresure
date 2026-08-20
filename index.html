@@ -1007,10 +1007,10 @@
         }
 
         // CASO NACIONAL: SUCURSAL COTIZADA / DOMICILIO CONSULTAR POR PRIVADO
-        let precioSucursal = 7995; // Tarifa nacional (Norte / Sur)
+        let precioSucursal = 7995; // Por defecto Resto del País (Norte, Sur, Cuyo, etc.)
 
-        // Tarifa regional cercana (Buenos Aires, CABA, La Pampa)
-        if ((cpNum >= 1000 && cpNum <= 2000) || (cpNum >= 6000 && cpNum <= 8108) || (cpNum >= 8110 && cpNum <= 8300)) {
+        // Solo tarifas regionales para Provincia de Buenos Aires, CABA o La Pampa (CP 1000 a 2000 y 6000 a 8108)
+        if ((cpNum >= 1000 && cpNum <= 2000) || (cpNum >= 6000 && cpNum <= 8108)) {
             precioSucursal = 6995;
         }
 
